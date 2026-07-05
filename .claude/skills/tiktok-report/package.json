@@ -1,0 +1,14 @@
+{
+  "name": "tiktok-report-skill",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Scrape a public TikTok account and build a daily analytics report.",
+  "scripts": {
+    "scrape": "node scripts/scrape.mjs",
+    "report": "node scripts/build_report.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.48.0"
+  }
+}
