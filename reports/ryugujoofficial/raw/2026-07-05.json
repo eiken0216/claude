@@ -1,0 +1,11 @@
+{
+  "handle": "ryugujoofficial",
+  "scrapedAt": "2026-07-05T03:31:31.952Z",
+  "account": null,
+  "videos": [],
+  "warnings": [
+    "Could not load profile page (page.goto: net::ERR_TUNNEL_CONNECTION_FAILED at https://www.tiktok.com/@ryugujoofficial\nCall log:\n\u001b[2m  - navigating to \"https://www.tiktok.com/@ryugujoofficial\", waiting until \"domcontentloaded\"\u001b[22m\n). TikTok may be unreachable from this network, or the account is unavailable.",
+    "Could not read account stats (bot wall or private/renamed account). Try setting TIKTOK_COOKIE.",
+    "No videos captured from the profile feed. TikTok likely served a verification/bot wall. Re-run with a valid TIKTOK_COOKIE."
+  ]
+}
