@@ -8,6 +8,8 @@
 |---|---|
 | `HP文言_失神蠍BD購入特典.md` | オフィシャルHP掲載用の文言（本番テキスト＋編集メモ） |
 | `output/特典レイアウト_SAMPLE.png` | 4特典まとめのレイアウト画像（1920x1440・4:3、SAMPLE透かし入り） |
+| `output/特典レイアウト_SAMPLE_editable.svg` | レイアウトのベクターデータ（テキスト・オブジェクト編集可。Illustratorで開いて .ai 保存可） |
+| `output/特典レイアウト_SAMPLE.pdf` | レイアウトのPDF（見た目再現重視・フォント埋め込み。Illustratorでそのまま開ける） |
 | `output/特典単体_*.png` | 各特典の単体画像（元画像の白余白トリム＋SAMPLE透かし、長辺最大2400px） |
 | `layout/tokuten_layout.html` | まとめレイアウトのHTMLテンプレート |
 | `layout/render.mjs` | PNG書き出しスクリプト（Playwright使用） |

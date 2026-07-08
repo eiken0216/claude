@@ -14,7 +14,7 @@
 // 実行: NODE_PATH=/opt/node22/lib/node_modules node render.mjs
 
 import { createRequire } from 'module';
-import { readdirSync, existsSync, mkdirSync, readFileSync } from 'fs';
+import { readdirSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import path from 'path';
 
@@ -216,8 +216,120 @@ function path_basename(p) { return p.split('/').pop(); }
   }
   await page.waitForLoadState('networkidle');
   await page.screenshot({ path: path.join(outDir, '特典レイアウト_SAMPLE.png') });
-  await page.close();
   console.log('wrote 特典レイアウト_SAMPLE.png');
+
+  // ベクター書き出し（Illustrator入稿用）
+  // - PDF: 見た目再現重視（フォント埋め込み）。Illustratorでそのまま開ける
+  // - SVG: レイヤー/テキスト編集可能なソース。Illustratorで開いて .ai として保存できる
+  await page.pdf({
+    path: path.join(outDir, '特典レイアウト_SAMPLE.pdf'),
+    width: '1920px', height: '1440px', printBackground: true, pageRanges: '1',
+  });
+  console.log('wrote 特典レイアウト_SAMPLE.pdf');
+
+  const svg = await page.evaluate(() => {
+    const W = 1920, H = 1440;
+    const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const JP = "IPAPGothic, 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif";
+    const parts = [];
+    parts.push('<?xml version="1.0" encoding="UTF-8"?>');
+    parts.push(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`);
+    parts.push(`<defs>
+      <radialGradient id="glowTop" cx="0.5" cy="-0.1" r="0.65">
+        <stop offset="0" stop-color="#c8101e" stop-opacity="0.22"/><stop offset="1" stop-color="#c8101e" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="glowBottom" cx="0.5" cy="1.15" r="0.55">
+        <stop offset="0" stop-color="#c8101e" stop-opacity="0.12"/><stop offset="1" stop-color="#c8101e" stop-opacity="0"/>
+      </radialGradient>
+    </defs>`);
+    parts.push(`<g id="背景"><rect width="${W}" height="${H}" fill="#0b0b0d"/><rect width="${W}" height="${H}" fill="url(#glowTop)"/><rect width="${W}" height="${H}" fill="url(#glowBottom)"/></g>`);
+
+    // テキスト要素 → <text>（tspanで部分色を維持）
+    function textEl(el, group) {
+      const cs = getComputedStyle(el);
+      const fs = parseFloat(cs.fontSize);
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const r = range.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const baseline = r.top + fs * 0.88;
+      const ls = cs.letterSpacing === 'normal' ? 0 : parseFloat(cs.letterSpacing);
+      const weight = (parseInt(cs.fontWeight) >= 600) ? ' font-weight="bold"' : '';
+      let inner = '';
+      for (const node of el.childNodes) {
+        if (node.nodeType === 3) inner += esc(node.textContent);
+        else if (node.nodeType === 1) inner += `<tspan fill="${getComputedStyle(node).color}">${esc(node.textContent)}</tspan>`;
+      }
+      group.push(`<text x="${cx.toFixed(1)}" y="${baseline.toFixed(1)}" text-anchor="middle" font-family="${esc(JP)}" font-size="${fs}"${weight} letter-spacing="${ls}" fill="${cs.color}">${inner}</text>`);
+    }
+    const rectOf = el => el.getBoundingClientRect();
+
+    // ヘッダー
+    const hg = [`<g id="ヘッダー">`];
+    textEl(document.querySelector('.artist'), hg);
+    textEl(document.querySelector('.title'), hg);
+    const sub = document.querySelector('.sub');
+    const sr = rectOf(sub);
+    hg.push(`<line x1="${sr.left}" y1="${sr.top}" x2="${sr.right}" y2="${sr.top}" stroke="#c8101e" stroke-width="1"/>`);
+    hg.push(`<line x1="${sr.left}" y1="${sr.bottom}" x2="${sr.right}" y2="${sr.bottom}" stroke="#c8101e" stroke-width="1"/>`);
+    textEl(sub, hg);
+    textEl(document.querySelector('.release'), hg);
+    hg.push('</g>');
+    parts.push(hg.join('\n'));
+
+    // カード
+    for (const card of document.querySelectorAll('.card')) {
+      const key = card.dataset.key;
+      const g = [`<g id="特典_${key}">`];
+      const cr = rectOf(card);
+      g.push(`<rect x="${cr.left}" y="${cr.top}" width="${cr.width}" height="${cr.height}" fill="#161619" stroke="#2c2c31" stroke-width="1"/>`);
+      const shop = card.querySelector('.shop');
+      const shr = rectOf(shop);
+      g.push(`<rect x="${shr.left}" y="${shr.top}" width="${shr.width}" height="${shr.height}" fill="#c8101e"/>`);
+      textEl(shop, g);
+      const wrap = card.querySelector('.imgwrap');
+      const wr = rectOf(wrap);
+      if (wrap.classList.contains('has-img')) {
+        g.push(`<rect x="${wr.left}" y="${wr.top}" width="${wr.width}" height="${wr.height}" fill="#ffffff"/>`);
+      }
+      for (const img of wrap.querySelectorAll('img')) {
+        const ir = rectOf(img);
+        g.push(`<image x="${ir.left.toFixed(1)}" y="${ir.top.toFixed(1)}" width="${ir.width.toFixed(1)}" height="${ir.height.toFixed(1)}" preserveAspectRatio="xMidYMid meet" xlink:href="${img.src}"/>`);
+      }
+      const ph = wrap.querySelector('.placeholder');
+      if (ph) {
+        const pr = rectOf(ph);
+        g.push(`<rect x="${pr.left}" y="${pr.top}" width="${pr.width}" height="${pr.height}" fill="none" stroke="#3a3a41" stroke-width="2" stroke-dasharray="8 6"/>`);
+        textEl(ph, g);
+      }
+      // SAMPLE透かし
+      const wm = card.querySelector('.wm span');
+      const wcs = getComputedStyle(wm);
+      const wfs = parseFloat(wcs.fontSize);
+      const wc = { x: wr.left + wr.width / 2, y: wr.top + wr.height / 2 };
+      g.push(`<text x="0" y="${(wfs * 0.32).toFixed(1)}" transform="translate(${wc.x.toFixed(1)},${wc.y.toFixed(1)}) rotate(-18)" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="${wfs}" font-weight="bold" letter-spacing="${wfs * 0.18}" fill="rgba(255,255,255,0.30)" stroke="rgba(0,0,0,0.28)" stroke-width="2" paint-order="stroke">SAMPLE</text>`);
+      // 特典名
+      const item = card.querySelector('.item');
+      const itr = rectOf(item);
+      g.push(`<rect x="${itr.left}" y="${itr.top}" width="${itr.width}" height="${itr.height}" fill="#101013"/>`);
+      g.push(`<line x1="${itr.left}" y1="${itr.top}" x2="${itr.right}" y2="${itr.top}" stroke="#2c2c31" stroke-width="1"/>`);
+      textEl(item, g);
+      g.push('</g>');
+      parts.push(g.join('\n'));
+    }
+
+    // フッター
+    const fg = [`<g id="注意書き">`];
+    textEl(document.querySelector('footer'), fg);
+    fg.push('</g>');
+    parts.push(fg.join('\n'));
+    parts.push('</svg>');
+    return parts.join('\n');
+  });
+  writeFileSync(path.join(outDir, '特典レイアウト_SAMPLE_editable.svg'), svg);
+  console.log('wrote 特典レイアウト_SAMPLE_editable.svg');
+
+  await page.close();
 }
 
 // 2) 単体画像（元画像そのまま + SAMPLE透かし）
