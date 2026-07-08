@@ -7,22 +7,22 @@
 | パス | 内容 |
 |---|---|
 | `HP文言_失神蠍BD購入特典.md` | オフィシャルHP掲載用の文言（本番テキスト＋編集メモ） |
-| `output/特典レイアウト_SAMPLE.png` | 4特典まとめのレイアウト画像（1920x1080、SAMPLE透かし入り） |
-| `output/特典単体_*.png` | 各特典の単体画像（1600x1200、SAMPLE透かし入り） |
+| `output/特典レイアウト_SAMPLE.png` | 4特典まとめのレイアウト画像（1920x1440・4:3、SAMPLE透かし入り） |
+| `output/特典単体_*.png` | 各特典の単体画像（元画像の白余白トリム＋SAMPLE透かし、長辺最大2400px） |
 | `layout/tokuten_layout.html` | まとめレイアウトのHTMLテンプレート |
 | `layout/render.mjs` | PNG書き出しスクリプト（Playwright使用） |
-| `layout/assets/` | 実サンプル画像の置き場（下記参照） |
+| `layout/assets/` | 実サンプル画像（ベンダー支給のDropbox素材） |
 
-## 実サンプル画像の差し替え手順
+## 画像の状態（2026/7/8時点）
 
-現状の画像スロットはプレースホルダー。Dropboxのサンプル画像が手に入り次第、
-`layout/assets/` に以下のファイル名で配置して再実行すると、実画像入りの
-レイアウト＋単体画像（いずれもSAMPLE透かし付き）が `output/` に生成される。
-
-- `amazon.png`（または .jpg）… ビジュアルシート5枚セット
-- `sevennet.png` … サコッシュ
-- `rakuten.png` … スマホショルダー
-- `ouenten.png` … B2ポスター
+- `amazon.png` … ビジュアルシート5枚セット（支給ファイル名は「Amazon_メガジャケ.png」
+  だったが、中身はビジュアルシート5枚の絵柄。名称はベンダー側の誤記と思われる）
+- `sevennet.jpg` … サコッシュ
+- `rakuten_1.jpg`〜`rakuten_3.jpg` … スマホショルダー（3カット。まとめレイアウトでは
+  絵柄の見やすさ優先で _1(装着イメージ) と _3(デザインアップ) の2カットを使用。
+  単体画像は3カットすべて書き出し）
+- **応援店 B2ポスターの画像は未支給。** 届き次第 `ouenten.png`（または .jpg）として
+  `layout/assets/` に置いて下記を再実行すると、レイアウト・単体とも自動反映される。
 
 ```sh
 cd layout
@@ -31,5 +31,4 @@ NODE_PATH=/opt/node22/lib/node_modules node render.mjs
 
 ※ この作業環境からは dropbox.com への通信がネットワークポリシーで
 ブロックされているため、Dropboxリンクから直接取得できない。
-チャットに画像を添付するか、Google Drive（「特典」フォルダ等）に
-アップロードしてもらえれば取り込み可能。
+チャット添付または Google Drive 経由で受け渡しする。
