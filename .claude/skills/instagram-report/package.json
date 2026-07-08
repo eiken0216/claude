@@ -1,0 +1,11 @@
+{
+  "name": "instagram-report-skill",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Fetch analytics for your own Instagram professional account via the official Graph API and build a report.",
+  "scripts": {
+    "fetch": "node scripts/fetch_insights.mjs",
+    "report": "node scripts/build_report.mjs"
+  }
+}
