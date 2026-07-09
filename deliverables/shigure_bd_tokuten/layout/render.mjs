@@ -190,9 +190,9 @@ const layoutRows = {};
 }
 function path_basename(p) { return p.split('/').pop(); }
 
-// 1) まとめレイアウト
-{
-  const page = await browser.newPage({ viewport: { width: 1920, height: 1440 } });
+// まとめレイアウトのページを開いて実画像を差し込む
+async function openLayout(scale) {
+  const page = await browser.newPage({ viewport: { width: 1920, height: 1440 }, deviceScaleFactor: scale });
   await page.goto('file://' + path.join(here, 'tokuten_layout.html'));
   for (const { key } of ITEMS) {
     const rows = layoutRows[key];
@@ -215,6 +215,18 @@ function path_basename(p) { return p.split('/').pop(); }
     }, [key, rows]);
   }
   await page.waitForLoadState('networkidle');
+  return page;
+}
+
+// 1) まとめレイアウト
+{
+  // 高解像度PNG（2x＝3840x2880。SNS投稿用）
+  const hi = await openLayout(2);
+  await hi.screenshot({ path: path.join(outDir, '特典レイアウト_SAMPLE_3840.png') });
+  await hi.close();
+  console.log('wrote 特典レイアウト_SAMPLE_3840.png');
+
+  const page = await openLayout(1);
   await page.screenshot({ path: path.join(outDir, '特典レイアウト_SAMPLE.png') });
   console.log('wrote 特典レイアウト_SAMPLE.png');
 
