@@ -318,9 +318,11 @@ function path_basename(p) { return p.split('/').pop(); }
       parts.push(g.join('\n'));
     }
 
-    // フッター
+    // フッター（行ごとに<text>化）
     const fg = [`<g id="注意書き">`];
-    textEl(document.querySelector('footer'), fg);
+    const fEls = document.querySelectorAll('footer > *');
+    if (fEls.length) { for (const el of fEls) textEl(el, fg); }
+    else { textEl(document.querySelector('footer'), fg); }
     fg.push('</g>');
     parts.push(fg.join('\n'));
     parts.push('</svg>');
