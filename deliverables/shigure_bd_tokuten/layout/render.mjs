@@ -302,6 +302,8 @@ function path_basename(p) { return p.split('/').pop(); }
         g.push(`<rect x="${pr.left}" y="${pr.top}" width="${pr.width}" height="${pr.height}" fill="none" stroke="#3a3a41" stroke-width="2" stroke-dasharray="8 6"/>`);
         textEl(ph, g);
       }
+      const cnote = wrap.querySelector('.cardnote');
+      if (cnote) textEl(cnote, g);
       // SAMPLE透かし
       const wm = card.querySelector('.wm span');
       const wcs = getComputedStyle(wm);

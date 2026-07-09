@@ -57,6 +57,12 @@
   }
   .imgwrap { flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 0; }
   .imgwrap.has-img { background: #ffffff; padding: 12px; }
+  /* 白枠内・最下部の注記（Amazonカード用） */
+  .imgwrap .cardnote {
+    position: absolute; left: 12px; right: 12px; bottom: 5px;
+    text-align: center; font-size: 13.5px; color: #6b6b72; letter-spacing: 0.02em;
+  }
+  .card[data-key="amazon"] .imgwrap.has-img { padding-bottom: 30px; }
   .imgwrap .row { flex: 1; min-height: 0; display: flex; gap: 10px; align-items: center; justify-content: center; max-width: 100%; }
   .imgwrap img { height: 100%; min-width: 0; object-fit: contain; flex: 0 1 auto; }
   .placeholder {
@@ -98,6 +104,7 @@
       <div class="shop">Amazon.co.jp</div>
       <div class="imgwrap">
         <div class="placeholder">画像準備中</div>
+        <div class="cardnote">※制作データの不備により、Amazon.co.jp限定特典「ビジュアルシート5枚セット」は、345の写真素材が入らず、掲載画像5枚セットとなります。何卒ご了承ください。</div>
         <div class="wm"><span>SAMPLE</span></div>
       </div>
       <div class="item">ビジュアルシート5枚セット</div>
@@ -133,7 +140,6 @@
 
   <footer>
     <div>※特典はご予約者優先、無くなり次第終了となります。　※特典の絵柄・仕様は変更になる場合がございます。　※上記店舗以外での配布はございません。</div>
-    <div class="note2">※制作データの不備により、Amazon.co.jp限定特典「ビジュアルシート5枚セット」は、345の写真素材が入らず、掲載画像5枚セットとなります。何卒ご了承ください。</div>
   </footer>
 </body>
 </html>
