@@ -27,7 +27,7 @@ THANKS = "Thank you for listening:))"
 
 # 実際のシート列に合わせて調整(en_re等の確認用列は含めない)
 LANGS = [('ja', 'ja'), ('romaji', 'ja-Latn'), ('en', 'en'), ('zh-TW', 'zh-TW'),
-         ('zh-CN', 'zh-CN'), ('ko', 'ko'), ('id', 'id'), ('pt', 'pt'), ('th', 'th')]
+         ('zh-CN', 'zh-CN'), ('ko', 'ko'), ('id', 'id'), ('pt', 'pt'), ('th', 'th'), ('es', 'es')]
 
 def ts(t):
     return f"{int(t//3600):02d}:{int(t%3600//60):02d}:{t%60:06.3f}"

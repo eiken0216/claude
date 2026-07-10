@@ -35,7 +35,7 @@ for tline, texts in cues:
 assert ptr == len(rows), f'歌詞行マッチ {ptr}/{len(rows)} — jaシートとVTTの本文がずれている'
 
 LANGS = [('romaji', 'ja-Latn'), ('en', 'en'), ('zh-TW', 'zh-TW'), ('zh-CN', 'zh-CN'),
-         ('ko', 'ko'), ('id', 'id'), ('pt', 'pt'), ('th', 'th')]
+         ('ko', 'ko'), ('id', 'id'), ('pt', 'pt'), ('th', 'th'), ('es', 'es')]
 for col, code in LANGS:
     if col not in rows[0]: continue
     out = [re.sub(r'Language: \S+', f'Language: {code}', header)]
