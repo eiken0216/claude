@@ -21,7 +21,7 @@ Claude Code のリモート実行環境からアクセスできるかを検証�
 | TikTok Top50/Viral50 | △ 要調査 | `/playlist-music/` URL は 404。`/music/` 形式でページは開くが「楽曲が見つかりません」表示。bot 対策・地域制限の可能性 |
 | Spotify アーティストページ | △ 未確認 | Web プレイヤーの描画が重く月間リスナー未取得。上位 5 都市はログイン後表示の可能性 |
 | Google トレンド | ❌ ほぼ不可 | データセンター IP のため 429（レート制限）。手元 PC での閲覧か有償 API（SerpAPI 等）が現実的 |
-| QlonoLink (= GrooveForce Analytics) | ✅ 使える | 手元ブラウザの localStorage（Cognito トークン）を注入してダッシュボード表示まで確認（`qlono.mjs`）。「比較分析／ランキング／お気に入り」が閲覧可 |
+| QlonoLink (= GrooveForce Analytics) | ✅ 使える | localStorage(Cognito)注入で閲覧＋**内部API(smeapi)直叩き**でSMEアーティストの曲別・日次再生数を取得（`qlono.mjs`=閲覧, `qlono_api.mjs`=APIクライアント）。GfKと違いほぼリアルタイム(T-1)・SME内部データなのでMV/UGC由来の再生も捕捉 |
 | GFA (GrooveForce) | 🔒 未確認 | QlonoLink と同一製品。同じ手順（GFA を開いた状態の localStorage）で入れる見込み |
 | Chrome 拡張（KOLSprite 等） | ❌ 対象外 | 手元ブラウザ用のツール。この環境では使えない |
 
@@ -45,6 +45,9 @@ GFK_EMAIL=... GFK_PASSWORD=... node gfk_collect.mjs
 
 # QlonoLink / GrooveForce Analytics を開く（要 localStorage 書き出しファイル）
 QLONO_LS_FILE=/path/to/qlono_localstorage.txt node qlono.mjs
+
+# QlonoLink 内部APIで曲別・日次再生数を取得（例: HOT LIMIT）
+QLONO_LS_FILE=... node qlono_api.mjs tm_revolution "HOT ?LIMIT" 2026-06-01 2026-07-10
 ```
 
 認証情報・トークンはコミットしないこと（環境変数／ファイルで渡す。`.gitignore` 済み）。
@@ -70,6 +73,18 @@ Cookie ではなく localStorage に Cognito トークンを持つため、手�
 
 id/access トークンは約1時間で失効するが、refreshToken 同梱なら自動更新される。
 更新トークンが失効したら取り直し。
+
+### QlonoLink API メモ（`qlono_api.mjs`）
+
+- smeapi ベース: `https://prod-sme.analytics.qlonolink.com/smeapi`。認証は
+  **`Authorization: <idToken>`**（Cognito idToken 生・"Bearer"なし）。トークンはブラウザ内
+  (page.evaluate) でのみ使い、ディスクに書き出さない。
+- ブランドid はURL準拠（例 `tm_revolution` / `sme_orangerange`）。UI検索で判明。
+- 日次再生数: `/reports/brands/{brand}/world_sales/daily/by_isrc?start_date&end_date&country_code=JP`
+  → `periods[].isrcs[].streaming_quantity`。曲名は `/brands/{brand}/isrc_products?isrcs=<ISRC,...>`
+  で逆引き（`streaming_ids` は内部ID(ESCL…)で日次の isrc(JP…)と別体系なので使わない）。
+- リアルタイムDSP順位: `/reports/brands/{brand}/dsp_realtime_chart/latest`（ITUNES/APPLE_MUSIC等）。
+- 取得データ（再生数）は第三者ライセンスデータのため**リポジトリにはコミットしない**。
 
 ## この環境固有の技術メモ
 

@@ -14,7 +14,10 @@ creds*.json
 *cookies*.txt
 tools/competitor-analytics/*.png
 
-# GfK-licensed / third-party analytics outputs — deliver directly, never version
-reports/competitor-analysis-*.html
-reports/*/gfk_*.json
+# GfK / GrooveForce-licensed third-party analytics outputs — deliver directly, never version.
+# Analysis reports embed licensed streaming figures, so ignore all report HTML + data exports.
+reports/*.html
+reports/**/*.json
 reports/**/*.csv
+qlono_*.json
+song_data.json

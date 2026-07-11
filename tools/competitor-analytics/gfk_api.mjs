@@ -3,7 +3,9 @@ import { request } from 'playwright';
 import { UA } from './lib/browser.mjs';
 
 const BASE = 'https://pm.gfk-e.com';
-const API = 'https://pmapi.gfk-e.com/v1/products/saleskpis/w?context=jp';
+// granularity: 'w'=週次 / 'd'=日次 / 'm'=月次。日次は取り込み済み週の範囲内のみ有効
+//（GfKは毎週木曜に前週 月〜日を取り込むため、当週の日次はまだ存在しない）。
+const apiUrl = (gran = 'w') => `https://pmapi.gfk-e.com/v1/products/saleskpis/${gran}?context=jp`;
 
 export async function makeClient() {
   const rc = await request.newContext({
@@ -19,10 +21,11 @@ export async function makeClient() {
 }
 
 // 指定週（monday=週の月曜 YYYY-MM-DD）のアーティスト楽曲別データ
-export async function queryWeek(rc, artist, start, end = start, { cc = 'S', limit = 100 } = {}) {
+// 再生数は total_stream_units（=premium+free、UIの「Streamed Unit Total」）に入る。numberofstreams は空。
+export async function queryWeek(rc, artist, start, end = start, { cc = 'S', limit = 100, gran = 'w' } = {}) {
   const payload = {
     ean: '', country: '1108',
-    sort: [{ numberofstreams: 'DESC' }],
+    sort: [{ total_stream_units: 'DESC' }],
     region: [], channel: [], releasecategory: [],
     start, end, limit, offset: 0,
     ntos: [null], part: [], nonmusic: [0], contdist: [], format: [],
@@ -31,7 +34,7 @@ export async function queryWeek(rc, artist, start, end = start, { cc = 'S', limi
     solrtitle: { solrtitle: '', notSolrtitle: '', operator: 'and' },
     companies: ['-9'], genre: [], origin: [], countryoforigin: [], releasetype: 'header',
   };
-  const res = await rc.post(API, {
+  const res = await rc.post(apiUrl(gran), {
     headers: {
       'content-type': 'application/json',
       'accept': 'application/json, text/plain, */*',
