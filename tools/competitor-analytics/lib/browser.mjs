@@ -18,7 +18,12 @@ export async function launchBrowser() {
   return chromium.launch(opts);
 }
 
-export async function newRoutedContext(browser, contextOptions = {}) {
+// contextOptions: newContext に渡す追加オプション
+// routeOptions.maxRedirects: route.fetch のリダイレクト追従数。
+//   8 = Node 側で最終応答まで追う（単純なページ取得向け・既定）
+//   0 = 30x をそのままブラウザに返す（OAuth/SPA のマルチオリジン遷移を維持したいとき）
+export async function newRoutedContext(browser, contextOptions = {}, routeOptions = {}) {
+  const maxRedirects = routeOptions.maxRedirects ?? 8;
   const ctx = await browser.newContext({
     userAgent: UA,
     locale: 'ja-JP',
@@ -28,7 +33,7 @@ export async function newRoutedContext(browser, contextOptions = {}) {
   });
   await ctx.route('**/*', async (route) => {
     try {
-      const resp = await route.fetch({ maxRedirects: 8 });
+      const resp = await route.fetch({ maxRedirects });
       await route.fulfill({ response: resp });
     } catch {
       await route.abort().catch(() => {});

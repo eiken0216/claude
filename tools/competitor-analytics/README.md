@@ -21,8 +21,8 @@ Claude Code のリモート実行環境からアクセスできるかを検証�
 | TikTok Top50/Viral50 | △ 要調査 | `/playlist-music/` URL は 404。`/music/` 形式でページは開くが「楽曲が見つかりません」表示。bot 対策・地域制限の可能性 |
 | Spotify アーティストページ | △ 未確認 | Web プレイヤーの描画が重く月間リスナー未取得。上位 5 都市はログイン後表示の可能性 |
 | Google トレンド | ❌ ほぼ不可 | データセンター IP のため 429（レート制限）。手元 PC での閲覧か有償 API（SerpAPI 等）が現実的 |
-| GFA (GrooveForce) | 🔒 認証情報待ち | `/login` にリダイレクト。ID/PW があればログイン自動化を試せる |
-| QlonoLink | 🔒 認証情報待ち | 同上（`analytics.qlonolink.com` → `/login`）。手元 Chrome で見えるのはログイン済み Cookie のため |
+| QlonoLink (= GrooveForce Analytics) | ✅ 使える | 手元ブラウザの localStorage（Cognito トークン）を注入してダッシュボード表示まで確認（`qlono.mjs`）。「比較分析／ランキング／お気に入り」が閲覧可 |
+| GFA (GrooveForce) | 🔒 未確認 | QlonoLink と同一製品。同じ手順（GFA を開いた状態の localStorage）で入れる見込み |
 | Chrome 拡張（KOLSprite 等） | ❌ 対象外 | 手元ブラウザ用のツール。この環境では使えない |
 
 ## 使い方
@@ -36,9 +36,23 @@ node check-sites.mjs
 
 # GfK にログインして Rankings 画面を開く（スクリーンショット保存）
 GFK_EMAIL=SMM.GFKxx@sonymusic.co.jp GFK_PASSWORD=... node gfk.mjs
+
+# QlonoLink / GrooveForce Analytics を開く（要 localStorage 書き出しファイル）
+QLONO_LS_FILE=/path/to/qlono_localstorage.txt node qlono.mjs
 ```
 
-認証情報はコミットしないこと（環境変数で渡す）。
+認証情報・トークンはコミットしないこと（環境変数／ファイルで渡す。`.gitignore` 済み）。
+
+### QlonoLink / GFA の localStorage 取得手順
+
+Cookie ではなく localStorage に Cognito トークンを持つため、手元 Chrome で:
+
+1. 対象サイト（QlonoLink または GFA）にログイン済みで開く
+2. `F12` → Console で `copy(JSON.stringify(localStorage))`
+3. メモ帳に貼り付け → `.txt` 保存 → `QLONO_LS_FILE` に指定
+
+id/access トークンは約1時間で失効するが、refreshToken 同梱なら自動更新される。
+更新トークンが失効したら取り直し。
 
 ## この環境固有の技術メモ
 
