@@ -147,11 +147,22 @@ evidence; never invent content.
 
 ### STEP 3 — 音楽分析 (optional but part of the original)
 
-Material: the Spotify MCP tools if connected (`get_currently_playing`,
-search — exact tool prefix varies by environment, use ToolSearch), or
-just ask the user to paste/describe their recent playlist. Apply the
-STEP 3 prompt (原文まま): analyze as 今の精神状態, not music taste. If no
-material, skip and say so in the report.
+Material — in order of preference:
+
+1. **The user's Spotify お気に入りの曲 (Liked Songs), newest 20–30 by
+   「最近追加した順」.** Recently-liked tracks are the same kind of
+   unconscious-selection data as intuitively saved images. The connected
+   Spotify MCP cannot read the user's library (it only has
+   currently-playing / catalog search / create-playlist), so ask the
+   user for a screenshot of their Liked Songs sorted by recently added,
+   or a pasted track list. Use catalog `search` to fill in
+   genre/mood/tempo context for tracks you don't know.
+2. `get_currently_playing` as a small live supplement.
+
+Apply the STEP 3 prompt (原文まま): analyze as 今の精神状態, not music
+taste. If no material, skip and say so in the report. After the
+diagnosis, offer to build the 「処方プレイリスト」 from item 9 (今聴くべき
+音楽) via the Spotify `create_playlist` tool — only if the user wants it.
 
 ### STEP 4 — 総合診断レポート
 
