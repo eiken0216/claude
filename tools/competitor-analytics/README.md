@@ -10,7 +10,7 @@ Claude Code のリモート実行環境からアクセスできるかを検証�
 
 | ソース | 判定 | 備考 |
 |---|---|---|
-| GfK Planet Music | ✅ 使える | ID/PW でログイン成功、Rankings 画面表示まで確認（`gfk.mjs`） |
+| GfK Planet Music | ✅ 使える | ID/PW ログイン＋**内部API直叩き**で楽曲別/週次の国内再生数(Streamed Unit)を取得（`gfk.mjs`=UI確認, `gfk_api.mjs`=APIクライアント, `gfk_collect.mjs`=26週収集） |
 | YouTube Charts | ✅ 使える | JP 週間 Top100 の全行が取得できることを確認 |
 | Melon Chart | ✅ 使える | サーバーレンダリングで曲名まで取得可 |
 | Wikipedia PV 数 | ✅ 使える | pageviews ツールの裏にある Wikimedia REST API を直接叩くのが確実。言語別（langviews 相当）も同 API で可 |
@@ -37,11 +37,28 @@ node check-sites.mjs
 # GfK にログインして Rankings 画面を開く（スクリーンショット保存）
 GFK_EMAIL=SMM.GFKxx@sonymusic.co.jp GFK_PASSWORD=... node gfk.mjs
 
+# GfK 内部APIで指定アーティストの楽曲別・国内再生数を取得（UI不要）
+GFK_EMAIL=... GFK_PASSWORD=... node gfk_api.mjs 龍宮城
+
+# 2アーティストの26週トレンド＋楽曲別を一括収集（gfk_data.json 出力）
+GFK_EMAIL=... GFK_PASSWORD=... node gfk_collect.mjs
+
 # QlonoLink / GrooveForce Analytics を開く（要 localStorage 書き出しファイル）
 QLONO_LS_FILE=/path/to/qlono_localstorage.txt node qlono.mjs
 ```
 
 認証情報・トークンはコミットしないこと（環境変数／ファイルで渡す。`.gitignore` 済み）。
+
+### GfK API メモ（`gfk_api.mjs`）
+
+- ログインは `/signin` への CSRF 付き form POST。その後 `/music.jp/session` が返す
+  `token` を **`x-mx-reqtoken` ヘッダー**に載せて `pmapi.gfk-e.com/v1/products/saleskpis/w`
+  を叩く（`pm.session` cookie は pmapi ドメインに届かないため token 認証が必要）。
+- 再生数フィールドは **`total_stream_units`**（=`stream_premium_units`+`stream_free_units`）
+  ＝UIの「Streamed Unit（Total）」。`numberofstreams` は空。
+- `country:"1108"`=日本、`chartcriteria:["S"]`=Single、期間は週の月曜日で指定。
+  start≠end のレンジは**その期間の合算**を返す。
+- 取得した GfK データ（再生数）は第三者ライセンスデータのため**リポジトリにはコミットしない**。
 
 ### QlonoLink / GFA の localStorage 取得手順
 
