@@ -13,3 +13,8 @@ test-results/
 creds*.json
 *cookies*.txt
 tools/competitor-analytics/*.png
+
+# GfK-licensed / third-party analytics outputs — deliver directly, never version
+reports/competitor-analysis-*.html
+reports/*/gfk_*.json
+reports/**/*.csv
