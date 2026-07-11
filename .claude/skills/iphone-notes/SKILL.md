@@ -5,15 +5,19 @@ description: Import ALL notes from the user's iPhone メモ app (Apple Notes) �
 
 # iPhone メモ → 直感カルテ (self-analysis from Apple Notes)
 
-Adapted from the viral "AI 自己解剖 / 直感カルテ" method (yutori CEO's AI
-workflow, shared by @terada_masanobu). The original feeds one's Pinterest
-saves to the AI and has it verbalize what the person is drawn to. This
-version replaces Pinterest with the user's **entire iPhone メモ (Apple
-Notes) collection** — a pile of intuitively written notes is the same kind
-of unconscious-interest data.
+Adapted from the "AI 自己解剖 / 直感カルテ" method (yutori CEO ゆとりくん's
+AI workflow, published with the original prompts in
+[@terada_masanobu's X article](https://x.com/terada_masanobu/status/2075337311726752218)).
+The original is a 4-step flow — STEP1 生まれ持った性質(OS), STEP2 Pinterest
+画像分析, STEP3 音楽分析, STEP4 総合診断. This version changes exactly one
+thing: STEP2's material is the user's **entire iPhone メモ (Apple Notes)
+collection** instead of Pinterest saves — a pile of intuitively written
+notes is the same kind of unconscious-interest data. The original prompts
+(and the adapted STEP2) live in `PROMPTS.md` next to this file.
 
 Two phases: **import** (get every note into `data/notes/`) and **analyze**
-(write the 直感カルテ report). Import is idempotent — re-running dedupes.
+(run the 4 steps, write the 直感カルテ report). Import is idempotent —
+re-running dedupes.
 
 ## Inputs
 
@@ -42,14 +46,16 @@ Caveats to tell the user: locked notes and notes with incompatible
 attachments (photos, drawings, scans) may refuse to move — those need
 Route B, or individual share-sheet export for a handful.
 
-Then import via the Gmail MCP tools:
+Then import via the Gmail MCP tools (exact tool prefix varies by
+environment — locate `search_threads` / `get_thread` / `get_message` via
+ToolSearch if needed):
 
-1. `mcp__Gmail__search_threads` with query `label:notes` — paginate until
-   exhausted. (If zero results, also try `in:anywhere subject:* label:notes`
-   variants before concluding the sync isn't set up.)
-2. For each thread, `mcp__Gmail__get_thread` / `mcp__Gmail__get_message`.
-   Each message is one note: subject = title, date header = timestamp,
-   body = note text (may be HTML).
+1. `search_threads` with query `label:notes` — paginate until exhausted.
+   (If zero results, also try `in:anywhere label:notes` variants before
+   concluding the sync isn't set up.)
+2. For each thread, `get_thread` / `get_message`. Each message is one
+   note: subject = title, date header = timestamp, body = note text
+   (may be HTML).
 3. Write each note as a file `notes_inbox/gmail/<NNNN>.md` shaped like:
 
    ```markdown
@@ -82,9 +88,9 @@ Drive → Route C).
 
 Any of `.txt .md .markdown .html .htm .enex .eml` placed in `notes_inbox/`
 (subfolders fine — subfolder names become the note's folder). If the user
-uploaded an export to Google Drive instead, find it with
-`mcp__Google_Drive__search_files`, read each file's content, and write it
-into `notes_inbox/drive/` preserving names, then normalize.
+uploaded an export to Google Drive instead, find it with the Drive MCP
+`search_files` tool, read each file's content, and write it into
+`notes_inbox/drive/` preserving names, then normalize.
 
 ### Normalize
 
@@ -107,67 +113,85 @@ the user with one of the routes — do not fabricate an analysis.**
 
 ## Phase 2 — 直感カルテ (the analysis)
 
-Read `data/notes/index.csv` first for the overall shape, then read the
-note bodies (`notes.jsonl` or the `md/` files — batch-read, don't skip;
-if the corpus is huge, prioritize by recency but sample every folder).
+Follow the original 4-step flow using the prompts in `PROMPTS.md` (same
+directory). Only STEP 2's material differs from the original (Pinterest
+images → the notes corpus); changes are marked ★調整 there.
 
-### Optional enrichment (mirrors the original method)
+The original's core rule: **答えを聞くのではなく、答えになる素材を渡して
+分析してもらう** — never open with 「私の悩みは何ですか?」; hand over
+materials and read the pattern.
 
-The original combines saved images with music, videos, and current
-worries. Offer these, but proceed without them if declined/unavailable:
+### STEP 0 — agent setup
 
-- **Music**: `mcp__Spotify__get_currently_playing` / recent listening.
-- **Schedule**: `mcp__Google_Calendar__list_events` for the last ~2 weeks.
-- **The user's own words**: ask one question — 「いま一番気になっている
-  悩みや仕事のテーマがあれば一言で」.
+Adopt the STEP 0 エージェント設定 prompt in PROMPTS.md as your role for
+the whole analysis. Materials that don't exist (e.g. YouTube history) are
+simply skipped.
 
-### Write the report
+### STEP 1 — OS (生まれ持った性質)
 
-Produce `reports/self/<YYYY-MM-DD>-kartei.md` in the user's language
-(Japanese unless they use another). Ground EVERY claim in the notes —
-quote short excerpts and counts as evidence; never invent content. Use
-this structure:
+Ask the user for: 生年月日 / MBTI (知っていれば) / 算命学・四柱推命などの
+診断結果 (あれば) / 簡単な経歴. The original's rule: **肩書きを盛らない** —
+facts like 「会社経営」, not titles, so the AI isn't biased by status. If
+the user skips this step, proceed anyway and note in the report that the
+OS layer is thin.
+
+### STEP 2 — メモ全件分析 (this replaces Pinterest)
+
+Read `data/notes/index.csv` first for the overall shape, then the note
+bodies (`notes.jsonl` or `md/` — batch-read, don't skip; if the corpus is
+huge, prioritize recency but sample every folder). Apply the STEP 2
+prompt from PROMPTS.md across the WHOLE corpus at once — per the
+original, the point is the pattern of the pile, not per-item review.
+Ground every claim in the notes: quote short excerpts and counts as
+evidence; never invent content.
+
+### STEP 3 — 音楽分析 (optional but part of the original)
+
+Material: the Spotify MCP tools if connected (`get_currently_playing`,
+search — exact tool prefix varies by environment, use ToolSearch), or
+just ask the user to paste/describe their recent playlist. Apply the
+STEP 3 prompt (原文まま): analyze as 今の精神状態, not music taste. If no
+material, skip and say so in the report.
+
+### STEP 4 — 総合診断レポート
+
+Apply the STEP 4 prompt to integrate OS + notes + music, and write
+`reports/self/<YYYY-MM-DD>-kartei.md` in the user's language (Japanese
+unless they use another), structured as the original's deliverables:
 
 ```markdown
 # 直感カルテ — <YYYY-MM-DD>
 
-> 素材: iPhone メモ <N>件 (<最古>〜<最新>) + <追加素材があれば>
+> 素材: iPhone メモ <N>件 (<最古>〜<最新>) / OS入力 <あり・なし> / 音楽 <あり・なし>
 
-## 1. データの全体像
-件数・期間・フォルダ/ジャンル分布・メモの長さの傾向
-
-## 2. 繰り返し現れるテーマ
-頻出する話題・言葉・関心の上位 5〜10。各テーマに件数と代表的な引用。
-
-## 3. 好み・美意識の言語化
-何に惹かれ、何を「良い」と感じているか。保存・記録しているものの
-共通項と、惹かれている理由の仮説。
-
-## 4. 無意識の欲求
-何度も書いているのに実行されていないこと。時間を置いて戻ってくる話題。
-
-## 5. 今の気分と悩み
-直近 1〜3 ヶ月のメモのトーンから読み取れる状態。
-
-## 6. 避けている課題
-途中で止まっているメモ、立ち消えたテーマ、書き方が急に浅くなる話題。
-
-## 7. 進むべき方向
-1〜6 の統合。方向性の提案と、今週できる最初の一歩を 3 つ。
+## 1. 総合診断タイトル (今の私を一言で)
+## 2. 現在の気分と深層心理
+## 3. OS分析 (生まれ持った性質)
+## 4. メモから読む無意識の世界観
+   STEP 2 の結果。頻出テーマ・件数・短い引用を根拠として添える。
+## 5. 音楽傾向から読む感情のテンポ (素材があれば)
+## 6. 統合診断 — 避けている課題 / 次に向かうべき方向
+## 7. アクション処方 (今聴くべき音楽・見るべき映像・行くべき場所・やるべき行動)
+## 8. 自分診断カルテ (1枚に凝縮したサマリーカード)
+## 9. 1週間の行動プラン (月〜日)
+## 10. 今の内面を表すAI画像生成プロンプト
+## 11. 短いエッセイとしての総括
 ```
 
-Tone: 断定しすぎない (hypotheses, not verdicts); kind but direct; the
-value is in specificity, not flattery.
+Tone (per the original prompt): 断定しすぎない — 「この情報群から見ると、
+今のあなたにはこういう傾向がある」の形で; kind but direct; the value is
+in specificity, not flattery.
 
 ### Deliver
 
-1. Post a tight summary in chat: the 2–3 strongest findings + the
-   suggested first steps, and where the full report lives.
+1. Post a tight summary in chat: 総合診断タイトル, the 2–3 strongest
+   findings, the first steps from the 1週間プラン, and where the full
+   report lives.
 2. **Ask before committing** — the report is personal. If the user says
    yes, commit only `reports/self/` (raw notes stay ignored).
-3. Offer the optional final step from the original method: turn the
-   kartei's keywords into a single visual board via Canva
-   (`mcp__Canva__generate-design`). Only do it if the user wants it.
+3. Offer the visual finale from the original method: feed item 10's
+   image-generation prompt to Canva's `generate-design` (if the Canva
+   MCP is connected) to render the 「今の内面」 visual. Only if wanted.
 
 ## Privacy rules
 
