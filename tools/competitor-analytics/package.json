@@ -1,0 +1,9 @@
+{
+  "name": "competitor-analytics",
+  "private": true,
+  "type": "module",
+  "description": "競合アーティストのサブスク再生数・検索量・SNS 指標ソースへのアクセスツール",
+  "dependencies": {
+    "playwright": "^1.53.0"
+  }
+}
