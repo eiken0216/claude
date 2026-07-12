@@ -1,0 +1,1042 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>16タイプ性格診断</title>
+</head>
+<body>
+<style>
+  :root {
+    --bg: #f3f3ef;
+    --surface: #fcfcfa;
+    --surface-2: #ecece6;
+    --ink: #23252c;
+    --ink-soft: #5c6070;
+    --ink-faint: #9b9fab;
+    --line: #dcddd5;
+    --accent: #3a5ba0;
+    --accent-ink: #ffffff;
+    --seal: #c0532f;
+    --ei: #c0532f;
+    --sn: #a07620;
+    --tf: #2e7d74;
+    --jp: #6d4e8e;
+    --shadow: 0 1px 2px rgba(35, 37, 44, 0.05), 0 8px 24px rgba(35, 37, 44, 0.06);
+    --font-display: "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Yu Mincho", "YuMincho", "BIZ UDMincho", "Noto Serif JP", "Times New Roman", serif;
+    --font-body: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic Medium", "Yu Gothic", "Noto Sans JP", "Meiryo", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161d;
+      --surface: #1c1f28;
+      --surface-2: #232734;
+      --ink: #e8e8e3;
+      --ink-soft: #a3a8b5;
+      --ink-faint: #6d7280;
+      --line: #2f3340;
+      --accent: #8fa8de;
+      --accent-ink: #14161d;
+      --seal: #d76c47;
+      --ei: #e07a58;
+      --sn: #cfa143;
+      --tf: #56b1a6;
+      --jp: #a284c6;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161d;
+    --surface: #1c1f28;
+    --surface-2: #232734;
+    --ink: #e8e8e3;
+    --ink-soft: #a3a8b5;
+    --ink-faint: #6d7280;
+    --line: #2f3340;
+    --accent: #8fa8de;
+    --accent-ink: #14161d;
+    --seal: #d76c47;
+    --ei: #e07a58;
+    --sn: #cfa143;
+    --tf: #56b1a6;
+    --jp: #a284c6;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #f3f3ef;
+    --surface: #fcfcfa;
+    --surface-2: #ecece6;
+    --ink: #23252c;
+    --ink-soft: #5c6070;
+    --ink-faint: #9b9fab;
+    --line: #dcddd5;
+    --accent: #3a5ba0;
+    --accent-ink: #ffffff;
+    --seal: #c0532f;
+    --ei: #c0532f;
+    --sn: #a07620;
+    --tf: #2e7d74;
+    --jp: #6d4e8e;
+    --shadow: 0 1px 2px rgba(35, 37, 44, 0.05), 0 8px 24px rgba(35, 37, 44, 0.06);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 24px 20px 64px;
+  }
+
+  /* ---- header ---- */
+  .site-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 0 28px;
+  }
+  .seal {
+    width: 34px;
+    height: 34px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    background: var(--seal);
+    color: #fdf9f4;
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 600;
+    border-radius: 6px;
+    transform: rotate(-3deg);
+  }
+  .site-head .t {
+    font-family: var(--font-display);
+    font-size: 15px;
+    letter-spacing: 0.14em;
+  }
+  .site-head .s {
+    margin-left: auto;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+  }
+
+  /* ---- intro ---- */
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 14px;
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(30px, 6vw, 42px);
+    line-height: 1.35;
+    letter-spacing: 0.04em;
+    margin: 0 0 18px;
+    text-wrap: balance;
+  }
+  .lead {
+    color: var(--ink-soft);
+    max-width: 34em;
+    margin: 0 0 30px;
+  }
+
+  .specimen {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin: 0 0 34px;
+  }
+  .specimen span {
+    display: block;
+    text-align: center;
+    padding: 10px 0 8px;
+    font-family: var(--font-display);
+    font-size: 15px;
+    letter-spacing: 0.18em;
+    color: var(--ink-faint);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+
+  .axes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 0 0 34px;
+  }
+  @media (max-width: 540px) { .axes { grid-template-columns: 1fr; } }
+  .axis-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 16px 12px;
+  }
+  .axis-card .name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+  .axis-card .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex: none;
+  }
+  .axis-card .poles {
+    font-family: var(--font-display);
+    font-size: 16px;
+    letter-spacing: 0.06em;
+  }
+  .axis-card .poles em {
+    font-style: normal;
+    color: var(--ink-faint);
+    font-size: 13px;
+    padding: 0 6px;
+  }
+
+  .note {
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    line-height: 1.9;
+    margin-top: 40px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+  }
+
+  /* ---- buttons ---- */
+  .btn {
+    appearance: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 15px;
+    letter-spacing: 0.12em;
+    padding: 14px 34px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+  .btn:hover { opacity: 0.9; }
+  .btn:active { transform: scale(0.98); }
+  .btn.ghost {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+  .btn:focus-visible,
+  .scale button:focus-visible,
+  .linklike:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+  .linklike {
+    appearance: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--ink-faint);
+    padding: 6px 2px;
+  }
+  .linklike:hover { color: var(--ink-soft); }
+
+  /* ---- quiz ---- */
+  .progress {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 26px;
+  }
+  .progress .bar {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--line);
+    overflow: hidden;
+  }
+  .progress .bar i {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+  .progress .count {
+    font-family: var(--font-display);
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .q-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 40px 36px 36px;
+  }
+  @media (max-width: 540px) { .q-card { padding: 30px 20px 28px; } }
+  .q-card.fade { animation: qin 0.28s ease; }
+  @keyframes qin {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .q-card.fade { animation: none; }
+    .progress .bar i { transition: none; }
+  }
+  .q-no {
+    font-size: 11px;
+    letter-spacing: 0.26em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin: 0 0 14px;
+  }
+  .q-text {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(19px, 3.4vw, 23px);
+    line-height: 1.7;
+    letter-spacing: 0.03em;
+    margin: 0 0 34px;
+    min-height: 3.4em;
+    text-wrap: balance;
+  }
+
+  .scale {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+  .scale button {
+    appearance: none;
+    background: none;
+    border: none;
+    padding: 6px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+  }
+  .scale button i {
+    display: block;
+    border-radius: 50%;
+    border: 2px solid var(--ink-faint);
+    background: transparent;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  }
+  .scale button:hover i { transform: scale(1.12); }
+  .scale button.agree i { border-color: var(--accent); }
+  .scale button.disagree i { border-color: var(--sn); }
+  .scale button.on.agree i { background: var(--accent); }
+  .scale button.on.disagree i { background: var(--sn); }
+  .scale button.on.mid i { background: var(--ink-faint); }
+  .s3 i { width: 34px; height: 34px; }
+  .s2 i { width: 27px; height: 27px; }
+  .s1 i { width: 21px; height: 21px; }
+  .s0 i { width: 16px; height: 16px; }
+
+  .scale-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    letter-spacing: 0.06em;
+    margin-bottom: 26px;
+  }
+  .scale-labels .no { color: var(--sn); }
+  .scale-labels .yes { color: var(--accent); }
+
+  .q-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .kbd-hint {
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    letter-spacing: 0.06em;
+  }
+  @media (hover: none) { .kbd-hint { visibility: hidden; } }
+
+  /* ---- result ---- */
+  .r-head {
+    text-align: center;
+    padding: 16px 0 8px;
+  }
+  .r-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 18px;
+  }
+  .r-code {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(56px, 14vw, 88px);
+    line-height: 1.1;
+    letter-spacing: 0.12em;
+    margin: 0 0 6px;
+  }
+  .r-code b { font-weight: 600; }
+  .r-name {
+    font-family: var(--font-display);
+    font-size: clamp(21px, 4.4vw, 26px);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    margin: 0 0 10px;
+  }
+  .r-tag {
+    color: var(--ink-soft);
+    font-size: 15px;
+    margin: 0 0 34px;
+  }
+
+  .r-bars {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 26px 28px 22px;
+    margin-bottom: 26px;
+    display: grid;
+    gap: 20px;
+  }
+  @media (max-width: 540px) { .r-bars { padding: 22px 18px 18px; } }
+  .r-bar .labels {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 13px;
+    margin-bottom: 7px;
+  }
+  .r-bar .labels .axis-name {
+    color: var(--ink-faint);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+  }
+  .r-bar .labels .side { color: var(--ink-soft); }
+  .r-bar .labels .side.win { font-weight: 600; }
+  .r-bar .labels .pct {
+    font-family: var(--font-display);
+    font-variant-numeric: tabular-nums;
+  }
+  .r-bar .track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--surface-2);
+    position: relative;
+    overflow: hidden;
+  }
+  .r-bar .track i {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-radius: 4px;
+    width: 0;
+    transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @media (prefers-reduced-motion: reduce) { .r-bar .track i { transition: none; } }
+
+  .r-desc {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 30px 32px;
+    margin-bottom: 26px;
+  }
+  @media (max-width: 540px) { .r-desc { padding: 24px 20px; } }
+  .r-desc h2 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    margin: 0 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .r-desc h2::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+  .r-desc p { margin: 0 0 8px; color: var(--ink); }
+  .r-desc .sec { margin-top: 26px; }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 2px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .chips li {
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+  }
+  .cautions {
+    margin: 2px 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--ink-soft);
+    font-size: 14.5px;
+  }
+  .cautions li {
+    padding: 5px 0 5px 18px;
+    position: relative;
+  }
+  .cautions li::before {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 0.95em;
+    width: 7px;
+    height: 2px;
+    background: var(--ink-faint);
+  }
+
+  .r-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 34px;
+  }
+  .copied-toast {
+    text-align: center;
+    font-size: 13px;
+    color: var(--tf);
+    height: 1.6em;
+    margin-top: 12px;
+  }
+
+  section[hidden] { display: none; }
+  .center { text-align: center; }
+</style>
+
+<div class="wrap">
+  <header class="site-head">
+    <span class="seal" aria-hidden="true">診</span>
+    <span class="t">十六型性格診断</span>
+    <span class="s">16 Types</span>
+  </header>
+
+  <main>
+    <!-- ============ intro ============ -->
+    <section id="intro">
+      <p class="eyebrow">Personality Test</p>
+      <h1>32の質問で、<br>あなたの性格タイプを読み解く。</h1>
+      <p class="lead">
+        直感で答えるだけで、4つの指標からあなたを16タイプのいずれかに判定します。
+        深く考えず、「ふだんの自分」に近いほうを選んでください。所要時間はおよそ5分です。
+      </p>
+
+      <div class="specimen" id="specimen" aria-hidden="true"></div>
+
+      <div class="axes">
+        <div class="axis-card">
+          <div class="name"><span class="dot" style="background: var(--ei)"></span>エネルギーの向き</div>
+          <div class="poles">外向 E<em>／</em>内向 I</div>
+        </div>
+        <div class="axis-card">
+          <div class="name"><span class="dot" style="background: var(--sn)"></span>ものの見方</div>
+          <div class="poles">現実 S<em>／</em>直観 N</div>
+        </div>
+        <div class="axis-card">
+          <div class="name"><span class="dot" style="background: var(--tf)"></span>判断のしかた</div>
+          <div class="poles">思考 T<em>／</em>感情 F</div>
+        </div>
+        <div class="axis-card">
+          <div class="name"><span class="dot" style="background: var(--jp)"></span>外界との接し方</div>
+          <div class="poles">計画 J<em>／</em>柔軟 P</div>
+        </div>
+      </div>
+
+      <p class="center">
+        <button class="btn" id="start">診断をはじめる</button>
+      </p>
+
+      <p class="note">
+        この診断はユングのタイプ論とMBTIの枠組みに着想を得た簡易版です。公式のMBTI®検査ではなく、
+        結果は自己理解のきっかけとしてお楽しみください。回答が送信されることはありません。
+      </p>
+    </section>
+
+    <!-- ============ quiz ============ -->
+    <section id="quiz" hidden>
+      <div class="progress">
+        <span class="count" id="count">01 / 32</span>
+        <div class="bar"><i id="bar-fill"></i></div>
+      </div>
+
+      <div class="q-card" id="q-card">
+        <p class="q-no" id="q-no">Question 01</p>
+        <p class="q-text" id="q-text"></p>
+
+        <div class="scale" id="scale" role="group" aria-label="どのくらい当てはまりますか">
+          <button class="disagree s3" data-v="-3" aria-label="まったく同意しない"><i></i></button>
+          <button class="disagree s2" data-v="-2" aria-label="同意しない"><i></i></button>
+          <button class="disagree s1" data-v="-1" aria-label="やや同意しない"><i></i></button>
+          <button class="mid s0" data-v="0" aria-label="どちらでもない"><i></i></button>
+          <button class="agree s1" data-v="1" aria-label="やや同意する"><i></i></button>
+          <button class="agree s2" data-v="2" aria-label="同意する"><i></i></button>
+          <button class="agree s3" data-v="3" aria-label="強く同意する"><i></i></button>
+        </div>
+        <div class="scale-labels">
+          <span class="no">同意しない</span>
+          <span class="yes">同意する</span>
+        </div>
+
+        <div class="q-foot">
+          <button class="linklike" id="back">← ひとつ前にもどる</button>
+          <span class="kbd-hint">キー 1–7 でも回答できます</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ result ============ -->
+    <section id="result" hidden>
+      <div class="r-head">
+        <p class="r-eyebrow">Your Type</p>
+        <p class="r-code" id="r-code"></p>
+        <p class="r-name" id="r-name"></p>
+        <p class="r-tag" id="r-tag"></p>
+      </div>
+
+      <div class="r-bars" id="r-bars"></div>
+
+      <div class="r-desc">
+        <h2>あなたはこんな人</h2>
+        <p id="r-desc-text"></p>
+        <div class="sec">
+          <h2>強み</h2>
+          <ul class="chips" id="r-strengths"></ul>
+        </div>
+        <div class="sec">
+          <h2>気をつけたいこと</h2>
+          <ul class="cautions" id="r-cautions"></ul>
+        </div>
+      </div>
+
+      <div class="r-actions">
+        <button class="btn" id="retry">もう一度診断する</button>
+        <button class="btn ghost" id="copy">結果をコピー</button>
+      </div>
+      <p class="copied-toast" id="toast"></p>
+
+      <p class="note">
+        パーセンテージは各指標の回答の傾きを示します。50%に近いほど、両方の性質をあわせ持つバランス型です。
+        この診断はMBTIの枠組みに着想を得た簡易版であり、公式のMBTI®検査ではありません。
+      </p>
+    </section>
+  </main>
+</div>
+
+<script>
+  "use strict";
+
+  /* ---------- data ---------- */
+
+  const AXES = [
+    { key: "EI", pos: "E", neg: "I", posJa: "外向", negJa: "内向", name: "エネルギーの向き", color: "var(--ei)" },
+    { key: "SN", pos: "S", neg: "N", posJa: "現実", negJa: "直観", name: "ものの見方", color: "var(--sn)" },
+    { key: "TF", pos: "T", neg: "F", posJa: "思考", negJa: "感情", name: "判断のしかた", color: "var(--tf)" },
+    { key: "JP", pos: "J", neg: "P", posJa: "計画", negJa: "柔軟", name: "外界との接し方", color: "var(--jp)" },
+  ];
+
+  /* dir: +1 = 同意すると pos(E/S/T/J) 寄り, -1 = 同意すると neg(I/N/F/P) 寄り */
+  const BANK = {
+    EI: [
+      { t: "初対面の人が多い集まりでも、自分から話しかけるほうだ。", dir: 1 },
+      { t: "一人で過ごす時間がないと、元気が回復しない。", dir: -1 },
+      { t: "考えごとは、誰かと話しながら整理するほうがはかどる。", dir: 1 },
+      { t: "大人数の宴会より、少人数でじっくり話すほうが好きだ。", dir: -1 },
+      { t: "週末の予定がぎっしり埋まっていると、むしろわくわくする。", dir: 1 },
+      { t: "電話よりも、文字のメッセージで済ませたいと思うことが多い。", dir: -1 },
+      { t: "沈黙が続くと、自分から話題を切り出したくなる。", dir: 1 },
+      { t: "にぎやかな場所に長くいると、どっと疲れてしまう。", dir: -1 },
+    ],
+    SN: [
+      { t: "説明を聞くときは、具体例がないとピンとこない。", dir: 1 },
+      { t: "物事の「いま」より、「その先の可能性」に目が行きがちだ。", dir: -1 },
+      { t: "マニュアルや手順書のとおりに進めるのが得意だ。", dir: 1 },
+      { t: "ふと気づくと、空想にふけっていることがある。", dir: -1 },
+      { t: "抽象的な議論より、目の前の現実的な問題を解くほうが好きだ。", dir: 1 },
+      { t: "会話が人生や未来といった大きなテーマに脱線するのが楽しい。", dir: -1 },
+      { t: "新しいやり方より、実績のある方法を選ぶほうが安心する。", dir: 1 },
+      { t: "アイデアを思いつくと、細部を詰める前に誰かに話したくなる。", dir: -1 },
+    ],
+    TF: [
+      { t: "議論では、相手の気持ちよりも結論の正しさを優先しがちだ。", dir: 1 },
+      { t: "映画やドラマの登場人物に感情移入して、涙ぐむことがある。", dir: -1 },
+      { t: "大きな決断の前には、まずメリットとデメリットを書き出す。", dir: 1 },
+      { t: "友人の相談には、解決策よりまず共感を返すことが多い。", dir: -1 },
+      { t: "指摘の内容が的確なら、厳しい批判でも素直に受け入れられる。", dir: 1 },
+      { t: "その場の空気や、人間関係の小さな変化に敏感なほうだ。", dir: -1 },
+      { t: "全体の効率のためなら、嫌われ役を引き受けることもできる。", dir: 1 },
+      { t: "何かを決めるとき、「みんなが納得しているか」が決め手になる。", dir: -1 },
+    ],
+    JP: [
+      { t: "旅行の前には、行き先と時間の計画をきっちり立てたい。", dir: 1 },
+      { t: "締め切り間際の集中力で、一気に乗り切ることが多い。", dir: -1 },
+      { t: "予定が直前に変わると、少なからずストレスを感じる。", dir: 1 },
+      { t: "選択肢は、できるだけ最後まで残しておきたい。", dir: -1 },
+      { t: "机や部屋は、だいたいいつも整理整頓されている。", dir: 1 },
+      { t: "一度決めたことでも、より良い案が出たらすぐ乗り換える。", dir: -1 },
+      { t: "やることリストにチェックを入れる瞬間が好きだ。", dir: 1 },
+      { t: "計画どおりに進めるより、気分が乗った勢いのほうが成果が出る。", dir: -1 },
+    ],
+  };
+
+  /* EI→SN→TF→JP の順で1問ずつ交互に出題 */
+  const QUESTIONS = [];
+  for (let i = 0; i < 8; i++) {
+    for (const a of AXES) {
+      const q = BANK[a.key][i];
+      QUESTIONS.push({ axis: a.key, dir: q.dir, t: q.t });
+    }
+  }
+
+  const TYPES = {
+    ISTJ: {
+      name: "実直な番人",
+      tag: "約束と手順を守り抜く、組織の背骨。",
+      desc: "責任感が強く、一度引き受けたことは最後までやり遂げます。事実と経験を重んじ、着実な手順で物事を進めるのが得意。派手さはなくても、積み上げた信頼の厚さは周囲でも随一です。",
+      strengths: ["責任感", "正確さ", "継続力", "誠実さ"],
+      cautions: ["変化への適応に時間がかかりやすい", "自分にも他人にも厳しくなりがち", "感情を言葉にするのを後回しにしがち"],
+    },
+    ISFJ: {
+      name: "思いやりの守り手",
+      tag: "気配りで場を支える、縁の下の力持ち。",
+      desc: "周囲の小さな変化によく気づき、頼まれる前にそっと手を差し伸べるタイプ。約束や恩義を大切にし、身近な人のためにこそ力を発揮します。堅実な仕事ぶりと温かさを兼ね備えた存在です。",
+      strengths: ["気配り", "忍耐強さ", "実務能力", "献身"],
+      cautions: ["頼みごとを断れず抱え込みがち", "自分のニーズを後回しにしやすい", "現状維持を選びすぎることがある"],
+    },
+    INFJ: {
+      name: "静かな理想家",
+      tag: "深い洞察で、人と未来を見つめる。",
+      desc: "物静かな佇まいの奥に、強い信念と理想を秘めています。人の本音や物事の本質を見抜く洞察力に優れ、「意味のあること」に時間を使いたいと願うタイプ。少数の深い関係を何より大切にします。",
+      strengths: ["洞察力", "共感力", "計画性", "信念の強さ"],
+      cautions: ["理想と現実のギャップに疲れやすい", "悩みを一人で抱え込みがち", "完璧主義に陥りやすい"],
+    },
+    INTJ: {
+      name: "深謀の戦略家",
+      tag: "長期の視点で、独自の道を設計する。",
+      desc: "独立心が強く、物事の裏にある構造やパターンを見抜く目を持っています。長期的な目標から逆算して計画を立て、静かに、しかし着実に実行するタイプ。知的な探究と改善に終わりはありません。",
+      strengths: ["戦略性", "分析力", "独立心", "実行力"],
+      cautions: ["感情面への配慮が後回しになりがち", "人に任せるのが苦手", "批評が辛口になりやすい"],
+    },
+    ISTP: {
+      name: "クールな職人",
+      tag: "手を動かしながら、最適解を見つける。",
+      desc: "冷静な観察者であり、仕組みを理解して使いこなすことにかけては右に出る者がいません。言葉より行動で示し、危機のときほど落ち着いて対処できるタイプ。無駄のない身のこなしが持ち味です。",
+      strengths: ["冷静さ", "実践力", "問題解決力", "柔軟性"],
+      cautions: ["長期の計画や約束に縛られるのが苦手", "感情の共有を面倒に感じがち", "興味を失うと一気に腰が重くなる"],
+    },
+    ISFP: {
+      name: "感性の芸術家",
+      tag: "いまこの瞬間の美しさを生きる。",
+      desc: "穏やかで控えめながら、自分だけの美意識と価値観をしっかり持っています。言葉で語るより、作品や行動、さりげない優しさで気持ちを表すタイプ。空気を和らげる存在感があります。",
+      strengths: ["美的センス", "優しさ", "柔軟性", "観察力"],
+      cautions: ["自己主張が苦手で損をしがち", "批判を深く受け止めすぎる", "長期の計画が後回しになりやすい"],
+    },
+    INFP: {
+      name: "内なる詩人",
+      tag: "自分の価値観という羅針盤で歩く。",
+      desc: "心の中に豊かな想像の世界を持ち、「何を大切にしたいか」を軸に生きるタイプ。共感力が高く、人の痛みにそっと寄り添えます。理想が高いぶん現実に傷つくこともありますが、その理想こそが原動力です。",
+      strengths: ["共感力", "創造性", "誠実さ", "柔軟な発想"],
+      cautions: ["理想主義ゆえに落ち込みやすい", "決断や締め切りが苦手", "自己批判が強くなりがち"],
+    },
+    INTP: {
+      name: "概念の探究者",
+      tag: "「なぜ?」を突き詰める、知の探検家。",
+      desc: "知的好奇心のかたまりで、興味のあるテーマにはとことん没頭します。独自の理論や視点を組み立てるのが得意で、議論の矛盾にすぐ気づく鋭さも。正確さへのこだわりは筋金入りです。",
+      strengths: ["論理力", "独創性", "集中力", "客観性"],
+      cautions: ["興味のないことには腰が重い", "考えすぎて動けなくなることがある", "感情表現がそっけなくなりがち"],
+    },
+    ESTP: {
+      name: "行動派の突破者",
+      tag: "考えるより先に、まず一歩。",
+      desc: "行動力とノリの良さで場を動かすタイプ。目の前の状況を素早く読み、リスクを恐れずチャンスをつかみます。理屈より実践、会議より現場。停滞した空気を破るのはいつもこの人です。",
+      strengths: ["行動力", "度胸", "状況判断", "社交性"],
+      cautions: ["飽きやすく計画が続きにくい", "リスクを軽く見積もりがち", "細かい詰めの作業が苦手"],
+    },
+    ESFP: {
+      name: "舞台の主役",
+      tag: "その場を明るくする、天性のムードメーカー。",
+      desc: "人を楽しませることが大好きで、いるだけで場が華やぐタイプ。五感で世界を味わい、いまこの瞬間を全力で楽しみます。その明るさは周囲の人の元気の源にもなっています。",
+      strengths: ["明るさ", "社交性", "順応力", "現場感覚"],
+      cautions: ["長期的な計画やコツコツ型の作業が苦手", "退屈に弱い", "批判を引きずりやすい"],
+    },
+    ENFP: {
+      name: "ひらめきの伝道師",
+      tag: "好奇心と情熱で、人を巻き込む。",
+      desc: "アイデアと情熱にあふれ、新しい可能性を見つけては周囲を巻き込んでいくタイプ。人の良いところを見つける名人で、初対面でもすぐに打ち解けます。その熱は伝染し、チームの起爆剤になります。",
+      strengths: ["発想力", "情熱", "共感力", "巻き込み力"],
+      cautions: ["熱しやすく冷めやすい", "ルーチンワークが苦手", "手を広げすぎてしまう"],
+    },
+    ENTP: {
+      name: "機知の革新者",
+      tag: "常識を疑い、議論を楽しむ。",
+      desc: "頭の回転が速く、「当たり前」を疑って新しい切り口を見つける名人。知的な議論を心から楽しみ、あえて反対の立場から考えてみることも。発想の瞬発力はどのタイプにも負けません。",
+      strengths: ["発想力", "弁舌", "適応力", "分析力"],
+      cautions: ["議論好きが行き過ぎて衝突することも", "やり切るまでの持久力が課題", "ルールや細部を軽視しがち"],
+    },
+    ESTJ: {
+      name: "現場の采配役",
+      tag: "秩序と実行で、組織を前に進める。",
+      desc: "物事を仕切り、決めたことを確実に実行へ移す推進役。ルールと効率を重んじ、曖昧なまま放置することを嫌います。誰かがやらねばならない意思決定を引き受けられる、頼れる存在です。",
+      strengths: ["統率力", "実行力", "責任感", "決断力"],
+      cautions: ["自分のやり方を押し付けがち", "感情面のケアが後手に回りやすい", "例外や変化への対応が硬くなりがち"],
+    },
+    ESFJ: {
+      name: "世話焼きのまとめ役",
+      tag: "みんなの「ちょうどいい」をつくる。",
+      desc: "周囲への気配りと面倒見の良さで、チームの潤滑油になるタイプ。人と人をつなぎ、場の調和を保つことに喜びを感じます。記念日や小さな約束を覚えているのは、たいていこの人です。",
+      strengths: ["協調性", "面倒見", "実務力", "社交性"],
+      cautions: ["周囲の評価を気にしすぎる", "批判に敏感", "自分のことを後回しにしがち"],
+    },
+    ENFJ: {
+      name: "導きの教師",
+      tag: "人の可能性を引き出す、天性のメンター。",
+      desc: "人の成長を助けることに情熱を注ぐタイプ。場の空気を的確に読み、一人ひとりの持ち味を引き出しながら、チームを目標へと導きます。その言葉には人を動かす熱がこもっています。",
+      strengths: ["リーダーシップ", "共感力", "伝える力", "利他性"],
+      cautions: ["人のために頑張りすぎて消耗しやすい", "対立を避けすぎることがある", "批判を個人的に受け止めがち"],
+    },
+    ENTJ: {
+      name: "豪腕の統率者",
+      tag: "ゴールから逆算し、迷わず率いる。",
+      desc: "目標達成への意志が強く、戦略を立てて組織をぐいぐい引っ張るタイプ。非効率を見過ごせず、常により良いやり方を探し続けます。困難な局面ほど、その真価が発揮されます。",
+      strengths: ["決断力", "戦略性", "統率力", "向上心"],
+      cautions: ["強引に見られることがある", "感情面への配慮が課題になりやすい", "休むのが下手"],
+    },
+  };
+
+  /* ---------- state ---------- */
+
+  const answers = new Array(QUESTIONS.length).fill(null);
+  let idx = 0;
+  let lockUntil = 0;
+
+  const $ = (id) => document.getElementById(id);
+  const intro = $("intro"), quiz = $("quiz"), result = $("result");
+  const qCard = $("q-card"), qNo = $("q-no"), qText = $("q-text");
+  const scale = $("scale"), barFill = $("bar-fill"), count = $("count");
+
+  /* ---------- intro specimen ---------- */
+
+  const specimen = $("specimen");
+  Object.keys(TYPES).forEach((code, i) => {
+    const s = document.createElement("span");
+    s.textContent = code;
+    specimen.appendChild(s);
+  });
+
+  /* ---------- quiz flow ---------- */
+
+  function pad(n) { return String(n).padStart(2, "0"); }
+
+  function renderQuestion(animate) {
+    const q = QUESTIONS[idx];
+    qNo.textContent = "Question " + pad(idx + 1);
+    count.textContent = pad(idx + 1) + " / " + QUESTIONS.length;
+    qText.textContent = q.t;
+    barFill.style.width = (idx / QUESTIONS.length) * 100 + "%";
+    for (const b of scale.querySelectorAll("button")) {
+      b.classList.toggle("on", answers[idx] !== null && Number(b.dataset.v) === answers[idx]);
+    }
+    if (animate) {
+      qCard.classList.remove("fade");
+      void qCard.offsetWidth;
+      qCard.classList.add("fade");
+    }
+  }
+
+  function selectAnswer(v) {
+    const now = Date.now();
+    if (now < lockUntil) return;
+    lockUntil = now + 320;
+    answers[idx] = v;
+    renderQuestion(false);
+    setTimeout(() => {
+      if (idx < QUESTIONS.length - 1) {
+        idx++;
+        renderQuestion(true);
+      } else {
+        showResult();
+      }
+    }, 260);
+  }
+
+  scale.addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (b) selectAnswer(Number(b.dataset.v));
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (quiz.hidden) return;
+    const k = Number(e.key);
+    if (k >= 1 && k <= 7) selectAnswer(k - 4);
+  });
+
+  $("back").addEventListener("click", () => {
+    if (idx > 0) {
+      idx--;
+      renderQuestion(true);
+    } else {
+      quiz.hidden = true;
+      intro.hidden = false;
+      window.scrollTo({ top: 0 });
+    }
+  });
+
+  $("start").addEventListener("click", () => {
+    intro.hidden = true;
+    result.hidden = true;
+    quiz.hidden = false;
+    renderQuestion(true);
+    window.scrollTo({ top: 0 });
+  });
+
+  /* ---------- result ---------- */
+
+  let lastSummary = "";
+
+  function computeResult() {
+    const sums = { EI: 0, SN: 0, TF: 0, JP: 0 };
+    QUESTIONS.forEach((q, i) => { sums[q.axis] += (answers[i] ?? 0) * q.dir; });
+    const MAX = 8 * 3;
+    let code = "";
+    const axes = AXES.map((a) => {
+      const posPct = Math.round(((sums[a.key] + MAX) / (2 * MAX)) * 100);
+      const winnerPos = posPct >= 50;
+      code += winnerPos ? a.pos : a.neg;
+      return { ...a, posPct, negPct: 100 - posPct, winnerPos };
+    });
+    return { code, axes };
+  }
+
+  function showResult() {
+    const { code, axes } = computeResult();
+    const type = TYPES[code];
+
+    quiz.hidden = true;
+    result.hidden = false;
+    window.scrollTo({ top: 0 });
+
+    const rCode = $("r-code");
+    rCode.innerHTML = "";
+    code.split("").forEach((ch, i) => {
+      const b = document.createElement("b");
+      b.textContent = ch;
+      b.style.color = AXES[i].color;
+      rCode.appendChild(b);
+    });
+
+    $("r-name").textContent = "「" + type.name + "」";
+    $("r-tag").textContent = type.tag;
+    $("r-desc-text").textContent = type.desc;
+
+    const st = $("r-strengths");
+    st.innerHTML = "";
+    type.strengths.forEach((s) => {
+      const li = document.createElement("li");
+      li.textContent = s;
+      st.appendChild(li);
+    });
+
+    const ca = $("r-cautions");
+    ca.innerHTML = "";
+    type.cautions.forEach((s) => {
+      const li = document.createElement("li");
+      li.textContent = s;
+      ca.appendChild(li);
+    });
+
+    const bars = $("r-bars");
+    bars.innerHTML = "";
+    axes.forEach((a) => {
+      const winPct = a.winnerPos ? a.posPct : a.negPct;
+      const div = document.createElement("div");
+      div.className = "r-bar";
+      div.innerHTML =
+        '<div class="labels">' +
+          '<span class="side' + (a.winnerPos ? " win" : "") + '">' + a.posJa + " " + a.pos +
+            ' <span class="pct">' + a.posPct + "%</span></span>" +
+          '<span class="axis-name">' + a.name + "</span>" +
+          '<span class="side' + (a.winnerPos ? "" : " win") + '"><span class="pct">' + a.negPct + "%</span> " +
+            a.negJa + " " + a.neg + "</span>" +
+        "</div>" +
+        '<div class="track"><i></i></div>';
+      const fill = div.querySelector("i");
+      fill.style.background = a.color;
+      fill.style[a.winnerPos ? "left" : "right"] = "0";
+      bars.appendChild(div);
+      void fill.offsetWidth; /* 幅0でレイアウトを確定させ、次の代入でtransitionを効かせる */
+      fill.style.width = winPct + "%";
+    });
+
+    lastSummary =
+      "私の性格タイプは " + code + "「" + type.name + "」でした。\n" +
+      axes.map((a) => {
+        const w = a.winnerPos ? a.posJa + "(" + a.pos + ") " + a.posPct : a.negJa + "(" + a.neg + ") " + a.negPct;
+        return "・" + a.name + ": " + w + "%";
+      }).join("\n") +
+      "\n#16タイプ性格診断";
+  }
+
+  $("retry").addEventListener("click", () => {
+    answers.fill(null);
+    idx = 0;
+    result.hidden = true;
+    quiz.hidden = false;
+    renderQuestion(true);
+    window.scrollTo({ top: 0 });
+  });
+
+  $("copy").addEventListener("click", async () => {
+    const toast = $("toast");
+    try {
+      await navigator.clipboard.writeText(lastSummary);
+      toast.textContent = "コピーしました";
+    } catch {
+      toast.textContent = "コピーできませんでした — 手動で選択してください";
+    }
+    setTimeout(() => { toast.textContent = ""; }, 2200);
+  });
+</script>
+</body>
+</html>
