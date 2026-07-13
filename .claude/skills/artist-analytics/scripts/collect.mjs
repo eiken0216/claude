@@ -118,7 +118,16 @@ if (qlonoArg !== 'off' && process.env.QLONO_LS_FILE) {
         const topSeries = periods.map(p => { const it = (p.isrcs || []).find(x => x.isrc === topIsrc); return { date: (p.end_date || '').slice(0, 10), v: it ? Number(it.streaming_quantity || 0) : 0 }; });
         // デモグラ（サービス横断サマリ）
         const demo = await gj(`${B}/reports/brands/${brand}/streaming_services/demographics/by_services/summaries?start_date=${start.replace(/-/g, '')}&end_date=${end.replace(/-/g, '')}&country_code=JP`);
-        return { brand, catalog, topSong: map[topIsrc] || null, topSeries, dsp, demographics: demo };
+        // 海外再生（国別・累計）— クロノでしか見れない。主要市場の country_code を順に集計。
+        const CCS = ['JP', 'US', 'TW', 'KR', 'HK', 'CN', 'TH', 'ID', 'PH', 'VN', 'MY', 'SG', 'GB', 'DE', 'FR', 'BR', 'MX', 'CA', 'AU'];
+        const overseas = [];
+        for (const cc of CCS) {
+          const r = await gj(`${B}/reports/brands/${brand}/world_sales/total/by_isrc?country_code=${cc}`);
+          const tot = Array.isArray(r) ? r.reduce((s, x) => s + Number(x.streaming_quantity || 0), 0) : 0;
+          if (tot > 0) overseas.push({ country: cc, streams: tot });
+        }
+        overseas.sort((a, b) => b.streams - a.streams);
+        return { brand, catalog, topSong: map[topIsrc] || null, topSeries, dsp, demographics: demo, overseasByCountry: overseas };
       }, brand);
       result.sources.qlono = data;
       result.availability.qlono = 'ok';
@@ -133,6 +142,15 @@ result.availability.naverDataLab = 'manual: 韓国検索量。フォーム自動
 result.availability.joysound = 'manual: 歌唱者性年代（会員・一定歌唱数の楽曲のみ）';
 result.availability.tiktokUGC = 'skill: /tiktok-report で別途取得';
 result.availability.igxFollowers = 'manual: Instagram/X フォロワーエクスポート（拡張機能。SME artistはqlonoのデモグラで代替）';
+
+// ---------- ソース優先順位（レポート作成の指針） ----------
+// 国内再生: クロノにあればクロノ優先、無ければGfK。海外再生: クロノのみ（world_sales国別）。
+result.primaryStreamingSource = result.availability.qlono === 'ok' ? 'qlono' : (result.availability.gfk === 'ok' ? 'gfk' : 'none');
+result.overseasSource = result.availability.qlono === 'ok' ? 'qlono (world_sales by country)' : 'unavailable (海外再生はクロノのみ・SME配給曲のみ)';
+result.notes = {
+  domestic: 'クロノ(qlono)にあればそれを国内再生の一次ソースに、無ければGfK。',
+  overseas: '海外再生はクロノの world_sales 国別集計のみ。Wikipedia言語別PVは「海外の検索関心」であって再生数ではない。',
+};
 
 fs.mkdirSync(path.dirname(out), { recursive: true });
 fs.writeFileSync(out, JSON.stringify(result, null, 1));

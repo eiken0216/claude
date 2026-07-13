@@ -5,9 +5,12 @@ description: Pull an artist's subscription/streaming, web, and SNS signals from 
 
 # アーティスト分析（1セット）
 
-アーティスト名を投げるだけで、**サブスク（国内再生数）＋Web（お茶の間/海外）＋チャート＋SNS/デモグラ**を
+アーティスト名を投げるだけで、**サブスク（国内再生数）＋Web（お茶の間/関心）＋チャート＋海外再生＋SNS/デモグラ**を
 可能な限り自動収集し、1つの分析ダッシュボードにまとめる。最初の環境調査で「使えるか」を確認した
 各ソースを、実データの取得ロジックとして統合したもの。
+
+**基本方針**: どの楽曲も **GfKとクロノ(QlonoLink)の両方を検索**し、**クロノに対象があればクロノを優先**、
+**GfKにしか無ければGfK**を使う（クロノはSME配給曲のみ）。**海外再生はクロノでしか見れない**（world_sales 国別）。
 
 ## 入力
 
@@ -61,11 +64,16 @@ description: Pull an artist's subscription/streaming, web, and SNS signals from 
    - **Instagram/X フォロワー**: 拡張機能。SMEなら QlonoLink の SNS デモグラで代替。X の正確なデモグラは存在しない。
 
 5. **ダッシュボードを生成**。`data.json`（複数なら全て）を読み、**1枚の統合ダッシュボードHTML**を
-   `reports/<slug>/report.html` に作る。含める要素（データがある分だけ／無い項目は「未取得」と明記）:
-   - サマリKPI（最新週/日の国内再生数、iTunes/Apple順位、トップ曲）
-   - サブスク時系列（GfK週次 Streamed Unit＋QlonoLink日次。QlonoはT-1でほぼリアルタイム）
+   `reports/<slug>/report.html` に作る。**ソース優先順位**（`data.json` の `primaryStreamingSource` 参照）:
+   - **国内再生**: クロノ(qlono)にあればクロノを一次ソース、無ければGfK（`primaryStreamingSource`）。
+   - **海外再生**: **クロノの `overseasByCountry`（world_sales 国別）のみ**。クロノに無い曲は海外再生は出せない。
+   - Wikipedia言語別PV(`langviews`)は**「海外の検索関心」であって再生数ではない**。海外再生とは別枠で（関心の参考として）扱う。
+   含める要素（データがある分だけ／無い項目は「未取得」と明記）:
+   - サマリKPI（最新週/日の国内再生数＝一次ソース、iTunes/Apple順位、トップ曲）
+   - サブスク時系列（一次ソースの時系列。クロノはT-1でほぼリアルタイム／GfKは週次 Streamed Unit）
    - チャート（iTunes/Apple/DSPリアルタイム順位）
-   - お茶の間（Wikipedia ja 日次PV＋スパイク）／海外（langviews 言語別・**best-effort**、QlonoLingのデモグラ地域割）
+   - **海外再生**（クロノ `overseasByCountry` の国別内訳）
+   - お茶の間（Wikipedia ja 日次PV＋スパイク）／海外の関心（langviews・best-effort・参考）
    - デモグラ（QlonoLink: 年代・性別）／SNS
    - カタログ上位曲
    - competitor があれば差分分析
@@ -84,8 +92,9 @@ description: Pull an artist's subscription/streaming, web, and SNS signals from 
 |---|---|---|---|
 | GfK 国内Streamed Unit | ✅ | `tools/competitor-analytics/gfk_api.mjs` | 週次/日次。要 GFK_EMAIL/PASSWORD |
 | QlonoLink/GFA（SME内部） | ✅ | `tools/competitor-analytics/qlono_api.mjs` | 日次/DSP順位/デモグラ/SNS。要 QLONO_LS_FILE。SME配給アーティストを検索で解決（お気に入り外も可） |
+| 海外再生（国別） | ✅ | qlono `overseasByCountry` | **クロノのみ**。world_sales を主要国コードで集計。SME配給曲のみ |
 | Wikipedia ja PV（お茶の間） | ✅ | `scripts/wiki.mjs` | 無認証REST |
-| Wikipedia 言語別PV（海外） | △ best-effort | `scripts/wiki.mjs` | wikimedia RESTが不安定。取れた分だけ使用 |
+| Wikipedia 言語別PV（海外の**関心**） | △ best-effort | `scripts/wiki.mjs` | 再生数ではなく検索関心。wikimedia RESTが不安定。参考値 |
 | iTunes/Apple チャート | ✅ | `scripts/charts.mjs` | iTunes JP RSS＋QlonoLink DSPリアルタイム |
 | Spotify Charts | △ | `scripts/charts.mjs`(kworb) | 公式はログイン。kworbミラーは best-effort |
 | YouTube/Melon チャート | △ | （要ブラウザ） | 未統合。必要時に追加 |
