@@ -86,6 +86,22 @@ description: Pull an artist's subscription/streaming, web, and SNS signals from 
    **リポジトリにコミットしない**（`.gitignore` の `reports/*.html`, `reports/**/*.json` 済み）。
    アーティファクト＋ファイル送付で直接渡す。ツール（scripts）の改善のみコミット。
 
+## キャリア変遷モード（アーティスト軸の年表・視覚化）
+
+「どの頻度でリリースし、どれくらいサブスクが回り、どのキャパのワンマンまでどんな流れで何年か」を
+1枚のタイムラインにする。5レーン（**リリース × ライブ会場キャパ × メディア/チャート × サブスク × SNS**）を
+時間軸に並べ、マイルストーン間の所要日数と、キャパ到達スピード等を算出する（参考: reports/artist-career-timeline-imase.html）。
+
+手順:
+1. **リリース＋タイアップ**: `collect.mjs`（GfK/クロノのカタログ配信日＋クロノ `tieups`。非SMEはWikipediaディスコグラフィ）。
+2. **サブスク/SNS/チャート**: `collect.mjs`（一次ソース優先）。
+3. **ライブ履歴**: `node scripts/live_history.mjs "<アーティスト名>" ["<slug>/<id>"]`。
+   - 同名別人がいると確信一致のみ採用し、曖昧なら**候補を提示**する。正しい actor を `slug/id` で指定し直す。
+   - **フェス出演は網羅されるが単独公演(ワンマン)は漏れることがある**。ワンマン/キャパ到達はWikipedia・公式で補完（捏造しない）。
+   - 会場キャパは `venues.json` で付与（単独/ツアーのみ。未登録会場は「キャパ未照合」）。
+4. **視覚化**: 5レーンのスイムレーン・タイムラインHTMLを生成（キャパはバー幅、マイルストーン間は破線で所要日数）。
+5. 算出指標: リリース頻度／デビュー→初ワンマン→Cap500→1500→2500→5000 の各所要日数／各到達点のサブスク水準／複数アーティスト重ね比較。
+
 ## ソース対応表（この環境で確認済み）
 
 | ソース | 自動化 | モジュール | 備考 |
@@ -96,6 +112,9 @@ description: Pull an artist's subscription/streaming, web, and SNS signals from 
 | Wikipedia ja PV（お茶の間） | ✅ | `scripts/wiki.mjs` | 無認証REST |
 | Wikipedia 言語別PV（海外の**関心**） | △ best-effort | `scripts/wiki.mjs` | 再生数ではなく検索関心。wikimedia RESTが不安定。参考値 |
 | iTunes/Apple チャート | ✅ | `scripts/charts.mjs` | iTunes JP RSS＋QlonoLink DSPリアルタイム |
+| ライブ・イベント履歴 | △ best-effort | `scripts/live_history.mjs` | eventernote公演DB。日付/会場/種別。**フェス網羅は強く単独公演は漏れることがある**。同名別人は候補提示 |
+| 会場キャパ | 辞書照合 | `scripts/venues.json` | 会場名→キャパの部分一致辞書（別途照合用・要追記）。単独/ツアーのみ対象 |
+| 楽曲タイアップ | ✅(SME)/△ | qlono `catalog[].tieups` / Wikipedia | クロノの tieups（genre＋タイトル）。非SMEはWikipedia song記事 |
 | Spotify Charts | △ | `scripts/charts.mjs`(kworb) | 公式はログイン。kworbミラーは best-effort |
 | YouTube/Melon チャート | △ | （要ブラウザ） | 未統合。必要時に追加 |
 | Google Trends | ❌ manual | — | DC-IPは429 |

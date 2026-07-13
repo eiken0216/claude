@@ -1,0 +1,34 @@
+{
+  "_note": "会場名→キャパ(概算・別途照合用)。部分一致で参照。フェス/野外は fes:true（ワンマン=キャパ分析の対象外）。適宜追記・修正すること。",
+  "venues": [
+    {"match": "Zepp Haneda", "cap": 2700}, {"match": "Zepp DiverCity", "cap": 2500},
+    {"match": "Zepp Shinjuku", "cap": 1500}, {"match": "Zepp新宿", "cap": 1500},
+    {"match": "Zepp Namba", "cap": 1600}, {"match": "Zepp なんば", "cap": 1600},
+    {"match": "Zepp Osaka Bayside", "cap": 2600}, {"match": "Zepp Bay Osaka", "cap": 2600},
+    {"match": "Zepp Nagoya", "cap": 1600}, {"match": "Zepp Fukuoka", "cap": 2000}, {"match": "Zepp Sapporo", "cap": 2000},
+    {"match": "Zepp", "cap": 2000},
+    {"match": "豊洲PIT", "cap": 3000}, {"match": "TOYOSU PIT", "cap": 3000},
+    {"match": "BIGCAT", "cap": 850}, {"match": "赤坂BLITZ", "cap": 1400}, {"match": "赤坂 BLITZ", "cap": 1400},
+    {"match": "クラブクアトロ", "cap": 700}, {"match": "CLUB QUATTRO", "cap": 700}, {"match": "Quattro", "cap": 700},
+    {"match": "WWW X", "cap": 700}, {"match": "WWW", "cap": 500},
+    {"match": "O-EAST", "cap": 1300}, {"match": "O-WEST", "cap": 600}, {"match": "Spotify O-", "cap": 1300},
+    {"match": "LIQUIDROOM", "cap": 1000}, {"match": "リキッドルーム", "cap": 1000},
+    {"match": "マイナビBLITZ赤坂", "cap": 1400},
+    {"match": "日本武道館", "cap": 14000}, {"match": "武道館", "cap": 14000},
+    {"match": "パシフィコ横浜 国立大ホール", "cap": 5000}, {"match": "パシフィコ横浜", "cap": 5000},
+    {"match": "オリックス劇場", "cap": 2400}, {"match": "オリックスホール", "cap": 2000},
+    {"match": "中野サンプラザ", "cap": 2200}, {"match": "国際フォーラム ホールA", "cap": 5000},
+    {"match": "有明アリーナ", "cap": 15000}, {"match": "横浜アリーナ", "cap": 17000}, {"match": "さいたまスーパーアリーナ", "cap": 37000},
+    {"match": "東京ドーム", "cap": 55000}, {"match": "京セラドーム", "cap": 55000}, {"match": "PayPayドーム", "cap": 50000},
+
+    {"match": "蘇我スポーツ公園", "cap": null, "fes": true, "note": "ROCK IN JAPAN/JAPAN JAM会場"},
+    {"match": "ZOZOマリン", "cap": null, "fes": true}, {"match": "マリンスタジアム", "cap": null, "fes": true},
+    {"match": "GMOアリーナさいたま", "cap": null, "fes": true, "note": "VIVA LA ROCK"},
+    {"match": "万博記念公園", "cap": null, "fes": true, "note": "SUMMER SONIC大阪等"},
+    {"match": "海浜幕張", "cap": null, "fes": true}, {"match": "幕張メッセ", "cap": null, "fes": true},
+    {"match": "若洲公園", "cap": null, "fes": true}, {"match": "きらら博記念公園", "cap": null, "fes": true},
+    {"match": "越後丘陵公園", "cap": null, "fes": true}, {"match": "コンベンションセンター", "cap": null, "fes": true},
+    {"match": "海水浴場", "cap": null, "fes": true}, {"match": "多目的広場", "cap": null, "fes": true},
+    {"match": "シネマ", "cap": null, "fes": true, "note": "上映会/イベント"}
+  ]
+}

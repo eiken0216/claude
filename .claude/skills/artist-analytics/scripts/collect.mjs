@@ -110,9 +110,14 @@ if (qlonoArg !== 'off' && process.env.QLONO_LS_FILE) {
         const periods = d.periods || [];
         const tot = {}; for (const p of periods) for (const it of (p.isrcs || [])) tot[it.isrc] = (tot[it.isrc] || 0) + Number(it.streaming_quantity || 0);
         const topIsrcs = Object.entries(tot).sort((a, b) => b[1] - a[1]).slice(0, 20).map(x => x[0]);
-        const map = {};
-        for (let i = 0; i < topIsrcs.length; i += 40) { const ip = await gj(`${B}/brands/${brand}/isrc_products?isrcs=${topIsrcs.slice(i, i + 40).join(',')}&search_types=`); for (const p of (ip.isrc_products || [])) if (p.isrc) map[p.isrc] = p.title; }
-        const catalog = topIsrcs.map(i => ({ isrc: i, title: map[i] || '?', total28d: tot[i] })).filter(x => x.total28d > 0);
+        const map = {}, tie = {}, rel = {};
+        for (let i = 0; i < topIsrcs.length; i += 40) {
+          const ip = await gj(`${B}/brands/${brand}/isrc_products?isrcs=${topIsrcs.slice(i, i + 40).join(',')}&search_types=`);
+          for (const p of (ip.isrc_products || [])) if (p.isrc) { map[p.isrc] = p.title; rel[p.isrc] = p.released_at || null;
+            tie[p.isrc] = (p.tieups || []).map(x => ({ genre: x.genre, title: x.title })); }
+        }
+        // タイアップ（アニメ/ドラマ/CM等）は QlonoLink の tieups から。曲別に付与。
+        const catalog = topIsrcs.map(i => ({ isrc: i, title: map[i] || '?', total28d: tot[i], released: rel[i], tieups: tie[i] || [] })).filter(x => x.total28d > 0);
         // トップ曲の日次系列
         const topIsrc = topIsrcs[0];
         const topSeries = periods.map(p => { const it = (p.isrcs || []).find(x => x.isrc === topIsrc); return { date: (p.end_date || '').slice(0, 10), v: it ? Number(it.streaming_quantity || 0) : 0 }; });
