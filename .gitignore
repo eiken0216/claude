@@ -1,4 +1,5 @@
-# Node
+# Node (match dirs and the skill's runtime symlink to tools/ deps)
+node_modules
 node_modules/
 npm-debug.log*
 
@@ -17,6 +18,7 @@ tools/competitor-analytics/*.png
 # GfK / GrooveForce-licensed third-party analytics outputs — deliver directly, never version.
 # Analysis reports embed licensed streaming figures, so ignore all report HTML + data exports.
 reports/*.html
+reports/**/*.html
 reports/**/*.json
 reports/**/*.csv
 qlono_*.json
