@@ -19,8 +19,9 @@ description: Pull an artist's subscription/streaming, web, and SNS signals from 
 
 - **GfK**: `GFK_EMAIL` / `GFK_PASSWORD`（第3LGアカウント）。国内 Streamed Unit。
 - **QlonoLink/GrooveForce**: `QLONO_LS_FILE`＝ログイン済み手元ブラウザの localStorage 書き出し（`.txt`）。
-  取得手順は `tools/competitor-analytics/README.md` 参照。**SMEアーティストかつアカウントの管理ブランドに
-  登録済みの場合のみ**取得可（未登録なら自動でGfKにフォールバック）。
+  取得手順は `tools/competitor-analytics/README.md` 参照。**SME配給アーティストなら検索でヒットする**
+  （お気に入り登録の有無に関係なく、`/smeapi/artists?keyword=` で検索→検索結果の `/brand/{id}` を解決）。
+  SME配給でないアーティスト（例: 原因は自分にある。）は検索0件＝未取得となり、自動でGfKにフォールバックする。
 - 無い認証情報のソースは自動スキップし、レポートに「未取得（理由）」と明記する。**数値は絶対に捏造しない。**
 
 ## 手順
@@ -82,7 +83,7 @@ description: Pull an artist's subscription/streaming, web, and SNS signals from 
 | ソース | 自動化 | モジュール | 備考 |
 |---|---|---|---|
 | GfK 国内Streamed Unit | ✅ | `tools/competitor-analytics/gfk_api.mjs` | 週次/日次。要 GFK_EMAIL/PASSWORD |
-| QlonoLink/GFA（SME内部） | ✅ | `tools/competitor-analytics/qlono_api.mjs` | 日次/DSP順位/デモグラ/SNS。要 QLONO_LS_FILE・管理ブランド登録 |
+| QlonoLink/GFA（SME内部） | ✅ | `tools/competitor-analytics/qlono_api.mjs` | 日次/DSP順位/デモグラ/SNS。要 QLONO_LS_FILE。SME配給アーティストを検索で解決（お気に入り外も可） |
 | Wikipedia ja PV（お茶の間） | ✅ | `scripts/wiki.mjs` | 無認証REST |
 | Wikipedia 言語別PV（海外） | △ best-effort | `scripts/wiki.mjs` | wikimedia RESTが不安定。取れた分だけ使用 |
 | iTunes/Apple チャート | ✅ | `scripts/charts.mjs` | iTunes JP RSS＋QlonoLink DSPリアルタイム |
@@ -98,6 +99,7 @@ description: Pull an artist's subscription/streaming, web, and SNS signals from 
 
 - **表記ゆれ**: GfKは同一アーティストが複数表記に分かれる（句点の全角/半角/なし等）。`--gfk` は取りこぼさない
   語を使う（句点なしで名寄せ等）。QlonoLinkはISRC単位で名寄せ済み。
-- **QlonoLink未登録アーティスト**: `availability.qlono` が `not-in-brand-list` になる。QlonoLinkで対象ブランドを
-  追加するか、GfK＋Web のみで分析（自動でそうなる）。
+- **QlonoLink**: 検索窓にアーティスト名を入れれば、お気に入り登録外でもSME配給アーティストは解決できる。
+  検索0件（`availability.qlono = not-found`）＝SME配給でない可能性が高く、GfK＋Web のみで分析（自動でそうなる）。
+  SMEなのに解決できない場合は `--qlono <brand_id>` を手動指定。
 - すべて best-effort。取れなかったソースは正直に「未取得」と書き、推測値で埋めない。

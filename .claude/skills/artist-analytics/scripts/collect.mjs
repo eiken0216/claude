@@ -79,17 +79,24 @@ if (qlonoArg !== 'off' && process.env.QLONO_LS_FILE) {
     log('[qlono] session...');
     const sess = await openSession(process.env.QLONO_LS_FILE);
     browser = sess.browser; const page = sess.page;
-    // ブランドid解決: QlonoLinkはアカウントが追跡中のブランドのみ閲覧可。お気に入り一覧を名前照合。
+    // ブランドid解決: 検索窓にアーティスト名を入れ、検索結果 <a href="/brand/{id}"> を名前一致で拾う。
+    // 検索は /smeapi/artists?keyword= を叩き、SME配給アーティストなら（お気に入り外でも）ヒットする。
     let brand = qlonoArg;
     if (qlonoArg === 'auto') {
-      const links = await page.evaluate(() => [...document.querySelectorAll('a[href*="/brand/"]')]
-        .map(a => ({ href: a.getAttribute('href'), text: (a.innerText || a.textContent || '').trim() })));
       const norm = s => (s || '').split(/[／\/]/)[0].replace(/[。\s・]/g, '').toLowerCase();
       const want = norm(artist);
-      const hit = links.find(l => want && (norm(l.text).includes(want) || want.includes(norm(l.text)) && norm(l.text).length >= 2));
+      const box = page.locator('input:visible').first();
+      await box.click().catch(() => {}); await box.fill(artist.replace(/。$/, '')).catch(() => {});
+      await page.waitForTimeout(4000);
+      const links = await page.evaluate(() => [...document.querySelectorAll('a[href^="/brand/"]')]
+        .map(a => ({ href: a.getAttribute('href'), text: (a.textContent || '').trim() })));
+      // 完全一致優先→部分一致（3文字以上）
+      const exact = links.find(l => norm(l.text) === want);
+      const part = links.find(l => { const t = norm(l.text); return t.length >= 3 && (t.includes(want) || want.includes(t)); });
+      const hit = exact || part;
       brand = hit ? hit.href.split('/brand/')[1].split(/[/?]/)[0] : null;
     }
-    if (!brand) { result.availability.qlono = `not-in-brand-list: 「${artist}」はこのQlonoLinkアカウントの管理ブランドに未登録。QlonoLinkで対象ブランドを追加するか、--qlono <brand_id> を指定`; }
+    if (!brand) { result.availability.qlono = `not-found: 「${artist}」はQlonoLink(SME内部DB)で検索ヒットなし＝SME配給でない可能性。GfK＋Webで分析。SMEなら --qlono <brand_id> 指定も可`; }
     else {
       const data = await page.evaluate(async (brand) => {
         const auth = localStorage.getItem(Object.keys(localStorage).find(k => k.endsWith('.idToken')));
