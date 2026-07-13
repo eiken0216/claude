@@ -36,7 +36,9 @@ for (const a of artists) {
   a.weekly = wk; a.monthly = mo;
   a.latest = wk.length ? wk[wk.length - 1].artistTotal : (mo.length ? mo[mo.length - 1].artistTotal : 0);
   a.latestMonth = mo.length ? mo[mo.length - 1].artistTotal : 0;
-  a.first = mo.length ? mo[0].artistTotal : (wk.length ? wk[0].artistTotal : 0);
+  const nz = mo.find(m => m.artistTotal > 0);        // 3年内デビュー勢は先頭が0
+  a.first = nz ? nz.artistTotal : 0;
+  a.debutMonth = (mo.length && mo[0].artistTotal === 0 && nz) ? nz.month : null;
   a.peak = mo.length ? Math.max(...mo.map(m => m.artistTotal)) : (wk.length ? Math.max(...wk.map(w => w.artistTotal)) : 0);
   a.topSong = wk.length ? wk[wk.length - 1].topSong : (mo.length ? mo[mo.length - 1].topSong : (a.d.sources?.qlono?.topSong || '—'));
   a.topSongVal = wk.length ? wk[wk.length - 1].topSongTotal : (mo.length ? mo[mo.length - 1].topSongTotal : 0);
@@ -61,28 +63,32 @@ const scaleBars = byLatest.map(a => `
     <div class="bar-track"><div class="bar-fill" style="width:${(a.latest / smax * 100).toFixed(1)}%;background:${a.col}"></div></div>
     <div class="bar-val">${jp(a.latest)}</div></div>`).join('');
 
-// ---------- モメンタム（起点=100 指数化 折れ線オーバーレイ） ----------
+// ---------- 規模＆成長トラック（月次・絶対値・対数軸オーバーレイ） ----------
+// 3年で規模も伸びも桁違い(龍宮城は約ゼロ→数百万、既存勢は数千万で横ばい)のため、
+// 指数化ではなく対数軸の絶対値で「大きさ」と「傾き＝成長」を同一図に。0月はfloorして扱う。
 function momentum() {
-  const W = 720, H = 240, pad = { l: 44, r: 96, t: 14, b: 26 };
-  const series = artists.filter(a => a.monthly.length >= 2).map(a => ({ a, pts: a.monthly.map(m => a.first ? m.artistTotal / a.first * 100 : 0) }));
+  const W = 720, H = 250, pad = { l: 50, r: 104, t: 14, b: 26 };
+  const series = artists.filter(a => a.monthly.length >= 2).map(a => ({ a, pts: a.monthly.map(m => m.artistTotal) }));
   if (!series.length) return '<div class="empty">GfK月次未取得</div>';
   const n = Math.max(...series.map(s => s.pts.length));
-  const allV = series.flatMap(s => s.pts);
-  const maxV = Math.max(...allV), minV = Math.min(...allV, 100);
+  const allPos = series.flatMap(s => s.pts).filter(v => v > 0);
+  const maxL = Math.log10(Math.max(...allPos)), minL = Math.log10(Math.max(1, Math.min(...allPos)));
   const xs = i => pad.l + i * (W - pad.l - pad.r) / (n - 1);
-  const ys = v => H - pad.b - (v - minV) / ((maxV - minV) || 1) * (H - pad.t - pad.b);
-  const grid = [maxV, (maxV + minV) / 2, minV, 100].filter((v, i, arr) => arr.indexOf(v) === i).map(v =>
-    `<line x1="${pad.l}" y1="${ys(v)}" x2="${W - pad.r}" y2="${ys(v)}" class="grid ${Math.round(v) === 100 ? 'base' : ''}"/><text x="${pad.l - 6}" y="${ys(v) + 3}" class="ytick">${Math.round(v)}</text>`).join('');
+  const ys = v => { const l = Math.log10(Math.max(1, v)); return H - pad.b - (l - minL) / ((maxL - minL) || 1) * (H - pad.t - pad.b); };
+  const gticks = []; for (let p = Math.ceil(minL); p <= Math.floor(maxL); p++) gticks.push(Math.pow(10, p));
+  const grid = gticks.map(v => `<line x1="${pad.l}" y1="${ys(v)}" x2="${W - pad.r}" y2="${ys(v)}" class="grid"/><text x="${pad.l - 6}" y="${ys(v) + 3}" class="ytick">${jp(v)}</text>`).join('');
   const lines = series.map(s => {
-    const p = s.pts.map((v, i) => `${i ? 'L' : 'M'}${xs(i).toFixed(1)},${ys(v).toFixed(1)}`).join(' ');
+    const startI = Math.max(0, s.pts.findIndex(v => v > 0)); // デビュー月から線を開始（floorゼロの垂直線を避ける）
+    const seg = s.pts.map((v, i) => ({ v, i })).slice(startI);
+    const p = seg.map((o, k) => `${k ? 'L' : 'M'}${xs(o.i).toFixed(1)},${ys(o.v).toFixed(1)}`).join(' ');
     const lx = xs(s.pts.length - 1), ly = ys(s.pts[s.pts.length - 1]);
-    return `<path d="${p}" fill="none" stroke="${s.a.col}" stroke-width="${s.a.self ? 2.8 : 1.8}" ${s.a.self ? '' : 'opacity="0.85"'}/>
+    return `<path d="${p}" fill="none" stroke="${s.a.col}" stroke-width="${s.a.self ? 2.8 : 1.8}" ${s.a.self ? '' : 'opacity="0.82"'}/>
       <circle cx="${lx}" cy="${ly}" r="3" fill="${s.a.col}"/>
-      <text x="${lx + 6}" y="${ly + 3}" class="endlab" fill="${s.a.col}">${esc(s.a.name)} ${Math.round(s.pts[s.pts.length - 1])}</text>`;
+      <text x="${lx + 6}" y="${ly + 3}" class="endlab" fill="${s.a.col}">${esc(s.a.name)}</text>`;
   }).join('');
   const mref = artists.find(a => a.monthly.length === n)?.monthly || artists[0].monthly;
   const xt = [0, Math.floor((n - 1) / 2), n - 1].map(i => `<text x="${xs(i)}" y="${H - 8}" class="xtick" text-anchor="middle">${esc(mref[i]?.month?.slice(2) || '')}</text>`).join('');
-  return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="モメンタム指数">${grid}${lines}${xt}</svg>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="規模と成長トラック（対数軸）">${grid}${lines}${xt}</svg>`;
 }
 
 // ---------- お茶の間 関心（ピークPV 横棒） ----------
@@ -93,11 +99,20 @@ const wikiBars = artists.slice().sort((x, y) => (y.wikiPeak || 0) - (x.wikiPeak 
     <div class="bar-val">${a.wikiPeak == null ? '<span class="faint">未取得</span>' : comma(a.wikiPeak)}</div></div>`).join('');
 
 // ---------- 比較表 ----------
+// 3年成長: 3年内デビュー勢は「デビュー月」、10倍以上は「×N」、それ以外は「±%」。
+const growthCell = a => {
+  if (a.debutMonth) return `<span class="faint">デビュー${esc(a.debutMonth)}</span>`;
+  if (!a.first) return '<span class="faint">—</span>';
+  const r = a.latestMonth / a.first;
+  if (r >= 10) return `<b class="up">×${r.toFixed(0)}</b>`;
+  const p = pct(a.latestMonth, a.first);
+  return `<b class="${p >= 0 ? 'up' : 'down'}">${p >= 0 ? '+' : ''}${p.toFixed(0)}%</b>`;
+};
 const rows = artists.map(a => `<tr class="${a.self ? 'me' : ''}">
   <td class="song"><span class="dot" style="background:${a.col}"></span>${esc(a.name)}${a.self ? ' ★' : ''}</td>
   <td class="r num">${jp(a.latest)}</td>
   <td class="r num">${jp(a.peak)}</td>
-  <td class="r"><b class="${a.latestMonth >= a.first ? 'up' : 'down'}">${a.first ? (pct(a.latestMonth, a.first) >= 0 ? '+' : '') + pct(a.latestMonth, a.first).toFixed(0) + '%' : '—'}</b></td>
+  <td class="r">${growthCell(a)}</td>
   <td>${esc(a.topSong || '—')}<span class="u2">${a.topSongVal ? ' ' + jp(a.topSongVal) + '/週' : ''}</span></td>
   <td class="r">${a.wikiPeak == null ? '<span class="faint">—</span>' : comma(a.wikiPeak)}</td>
   <td class="r">${a.overseasPct == null ? '<span class="faint">—</span>' : a.overseasPct.toFixed(1) + '%'}</td>
@@ -189,12 +204,12 @@ ${self ? `<p class="lead">${esc(self.name)}の最新週 <b>${jp(self.latest)}</b
 <section class="panel"><div class="panel-h"><h2>① 国内サブスク・スケール比較（最新週）</h2><span class="src">GfK Streamed Unit・${esc(self?.d?.generatedFor || '')}週</span></div>
   <div class="bars">${scaleBars}</div></section>
 
-<section class="panel"><div class="panel-h"><h2>② モメンタム（3年前=100 指数・月次）</h2><span class="src">起点比の伸び。絶対規模を除いた勢いの比較</span></div>
+<section class="panel"><div class="panel-h"><h2>② 規模＆成長トラック（月次・対数軸・3年）</h2><span class="src">縦=月間規模(対数)・傾き=成長。大小と伸びを同一図に</span></div>
   ${momentum()}
-  <p class="note-inline">各社の36ヶ月前を100として指数化。線が上＝この3年で伸びている。★＝対象を太線で強調。GfK月次 Streamed Unit。</p></section>
+  <p class="note-inline">縦軸は対数（万↔億）。線が高い＝規模が大きい／右上がり＝成長中。3年で桁が違うため指数化せず絶対値で表示。★＝対象を太線。GfK月次 Streamed Unit。</p></section>
 
-<section class="panel"><div class="panel-h"><h2>③ 比較表</h2><span class="src">最新週/3年ピーク/3年前比/トップ曲/Wiki関心ピーク/海外%/タイアップ</span></div>
-  <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>アーティスト</th><th class="r">最新週</th><th class="r">期間ピーク</th><th class="r">3年前比</th><th>トップ曲</th><th class="r">Wikiピーク</th><th class="r">海外%</th><th>タイアップ</th></tr></thead>
+<section class="panel"><div class="panel-h"><h2>③ 比較表</h2><span class="src">最新週/3年ピーク/3年成長/トップ曲/Wiki関心ピーク/海外%/タイアップ</span></div>
+  <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>アーティスト</th><th class="r">最新週</th><th class="r">期間ピーク</th><th class="r">3年成長</th><th>トップ曲</th><th class="r">Wikiピーク</th><th class="r">海外%</th><th>タイアップ</th></tr></thead>
   <tbody>${rows}</tbody></table></div>
   <p class="note-inline">海外%はクロノ（SME配給）でのみ算出可。非SMEは「—」。Wikiピークは記事日次PVの期間最大＝お茶の間の瞬間関心。</p></section>
 
