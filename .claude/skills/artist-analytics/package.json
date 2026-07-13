@@ -1,0 +1,7 @@
+{
+  "name": "artist-analytics",
+  "private": true,
+  "type": "module",
+  "description": "アーティストのサブスク・Web・SNSデータを1セットで収集して分析するスキル",
+  "dependencies": { "playwright": "^1.53.0" }
+}
