@@ -70,7 +70,9 @@ description: Pull an artist's subscription/streaming, web, and SNS signals from 
    - Wikipedia言語別PV(`langviews`)は**「海外の検索関心」であって再生数ではない**。海外再生とは別枠で（関心の参考として）扱う。
    含める要素（データがある分だけ／無い項目は「未取得」と明記）:
    - サマリKPI（最新週/日の国内再生数＝一次ソース、iTunes/Apple順位、トップ曲）
-   - サブスク時系列（一次ソースの時系列。クロノはT-1でほぼリアルタイム／GfKは週次 Streamed Unit）
+   - **サブスク推移＝直近3年（GfK月次36ヶ月）**を共通軸に。最新週KPI/WoWはGfK週次(直近8週)。
+   - **人気曲5曲の推移（リリース〜現在の全期間）**: SME配給曲は**クロノのデイリー**（`topSongsDaily`）、
+     非SMEは**GfK月次**（`topSongsMonthly`、デイリーは非SME不可）。曲別スパークラインで表示。
    - チャート（iTunes/Apple/DSPリアルタイム順位）
    - **海外再生**（クロノ `overseasByCountry` の国別内訳）
    - お茶の間（Wikipedia ja 日次PV＋スパイク）／海外の関心（langviews・best-effort・参考）
@@ -106,7 +108,8 @@ description: Pull an artist's subscription/streaming, web, and SNS signals from 
 
 | ソース | 自動化 | モジュール | 備考 |
 |---|---|---|---|
-| GfK 国内Streamed Unit | ✅ | `tools/competitor-analytics/gfk_api.mjs` | 週次/日次。要 GFK_EMAIL/PASSWORD |
+| GfK 国内Streamed Unit | ✅ | `tools/competitor-analytics/gfk_api.mjs` | 週次/**月次(3年trend)**/日次。曲別月次も。要 GFK_EMAIL/PASSWORD |
+| 人気曲5曲の推移 | ✅ | qlono `topSongsDaily`／gfk `topSongsMonthly` | SMEはデイリー全期間、非SMEはGfK月次。リリース〜現在 |
 | QlonoLink/GFA（SME内部） | ✅ | `tools/competitor-analytics/qlono_api.mjs` | 日次/DSP順位/デモグラ/SNS。要 QLONO_LS_FILE。SME配給アーティストを検索で解決（お気に入り外も可） |
 | 海外再生（国別） | ✅ | qlono `overseasByCountry` | **クロノのみ**。world_sales を主要国コードで集計。SME配給曲のみ |
 | Wikipedia ja PV（お茶の間） | ✅ | `scripts/wiki.mjs` | 無認証REST |

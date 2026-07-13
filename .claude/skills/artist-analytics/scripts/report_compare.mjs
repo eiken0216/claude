@@ -29,15 +29,17 @@ const artists = [{ slug: selfSlug, self: true, col: 'var(--self)' },
   ...rivalSlugs.map((s, i) => ({ slug: s, self: false, col: RCOL[i % RCOL.length] }))]
   .map(a => ({ ...a, name: names[a.slug] || a.slug, d: load(a.slug) })).filter(a => a.d);
 
-// 各社の共通指標を抽出
+// 各社の共通指標を抽出（横比較軸: 最新週=現在の走行率、月次36ヶ月=3年のモメンタム）
 for (const a of artists) {
   const wk = a.d.sources?.gfk?.weekly || [];
-  a.weekly = wk;
-  a.latest = wk.length ? wk[wk.length - 1].artistTotal : 0;
-  a.first = wk.length ? wk[0].artistTotal : 0;
-  a.peak = wk.length ? Math.max(...wk.map(w => w.artistTotal)) : 0;
-  a.topSong = wk.length ? wk[wk.length - 1].topSong : (a.d.sources?.qlono?.topSong || '—');
-  a.topSongVal = wk.length ? wk[wk.length - 1].topSongTotal : 0;
+  const mo = a.d.sources?.gfk?.monthly || [];
+  a.weekly = wk; a.monthly = mo;
+  a.latest = wk.length ? wk[wk.length - 1].artistTotal : (mo.length ? mo[mo.length - 1].artistTotal : 0);
+  a.latestMonth = mo.length ? mo[mo.length - 1].artistTotal : 0;
+  a.first = mo.length ? mo[0].artistTotal : (wk.length ? wk[0].artistTotal : 0);
+  a.peak = mo.length ? Math.max(...mo.map(m => m.artistTotal)) : (wk.length ? Math.max(...wk.map(w => w.artistTotal)) : 0);
+  a.topSong = wk.length ? wk[wk.length - 1].topSong : (mo.length ? mo[mo.length - 1].topSong : (a.d.sources?.qlono?.topSong || '—'));
+  a.topSongVal = wk.length ? wk[wk.length - 1].topSongTotal : (mo.length ? mo[mo.length - 1].topSongTotal : 0);
   a.nSongs = (a.d.sources?.gfk?.catalog || []).length || (a.d.sources?.qlono?.catalog || []).length;
   const wser = (a.d.sources?.wikipedia?.jpDaily || []).map(p => p.v ?? p.views ?? 0);
   a.wikiPeak = wser.length ? Math.max(...wser) : null;
@@ -62,8 +64,8 @@ const scaleBars = byLatest.map(a => `
 // ---------- モメンタム（起点=100 指数化 折れ線オーバーレイ） ----------
 function momentum() {
   const W = 720, H = 240, pad = { l: 44, r: 96, t: 14, b: 26 };
-  const series = artists.filter(a => a.weekly.length >= 2).map(a => ({ a, pts: a.weekly.map(w => a.first ? w.artistTotal / a.first * 100 : 0) }));
-  if (!series.length) return '<div class="empty">GfK週次未取得</div>';
+  const series = artists.filter(a => a.monthly.length >= 2).map(a => ({ a, pts: a.monthly.map(m => a.first ? m.artistTotal / a.first * 100 : 0) }));
+  if (!series.length) return '<div class="empty">GfK月次未取得</div>';
   const n = Math.max(...series.map(s => s.pts.length));
   const allV = series.flatMap(s => s.pts);
   const maxV = Math.max(...allV), minV = Math.min(...allV, 100);
@@ -78,7 +80,8 @@ function momentum() {
       <circle cx="${lx}" cy="${ly}" r="3" fill="${s.a.col}"/>
       <text x="${lx + 6}" y="${ly + 3}" class="endlab" fill="${s.a.col}">${esc(s.a.name)} ${Math.round(s.pts[s.pts.length - 1])}</text>`;
   }).join('');
-  const xt = [0, Math.floor((n - 1) / 2), n - 1].map(i => `<text x="${xs(i)}" y="${H - 8}" class="xtick" text-anchor="middle">${esc(artists[0].weekly[i]?.week?.slice(5) || '')}</text>`).join('');
+  const mref = artists.find(a => a.monthly.length === n)?.monthly || artists[0].monthly;
+  const xt = [0, Math.floor((n - 1) / 2), n - 1].map(i => `<text x="${xs(i)}" y="${H - 8}" class="xtick" text-anchor="middle">${esc(mref[i]?.month?.slice(2) || '')}</text>`).join('');
   return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="モメンタム指数">${grid}${lines}${xt}</svg>`;
 }
 
@@ -94,7 +97,7 @@ const rows = artists.map(a => `<tr class="${a.self ? 'me' : ''}">
   <td class="song"><span class="dot" style="background:${a.col}"></span>${esc(a.name)}${a.self ? ' ★' : ''}</td>
   <td class="r num">${jp(a.latest)}</td>
   <td class="r num">${jp(a.peak)}</td>
-  <td class="r"><b class="${a.latest >= a.first ? 'up' : 'down'}">${a.first ? (pct(a.latest, a.first) >= 0 ? '+' : '') + pct(a.latest, a.first).toFixed(0) + '%' : '—'}</b></td>
+  <td class="r"><b class="${a.latestMonth >= a.first ? 'up' : 'down'}">${a.first ? (pct(a.latestMonth, a.first) >= 0 ? '+' : '') + pct(a.latestMonth, a.first).toFixed(0) + '%' : '—'}</b></td>
   <td>${esc(a.topSong || '—')}<span class="u2">${a.topSongVal ? ' ' + jp(a.topSongVal) + '/週' : ''}</span></td>
   <td class="r">${a.wikiPeak == null ? '<span class="faint">—</span>' : comma(a.wikiPeak)}</td>
   <td class="r">${a.overseasPct == null ? '<span class="faint">—</span>' : a.overseasPct.toFixed(1) + '%'}</td>
@@ -186,12 +189,12 @@ ${self ? `<p class="lead">${esc(self.name)}の最新週 <b>${jp(self.latest)}</b
 <section class="panel"><div class="panel-h"><h2>① 国内サブスク・スケール比較（最新週）</h2><span class="src">GfK Streamed Unit・${esc(self?.d?.generatedFor || '')}週</span></div>
   <div class="bars">${scaleBars}</div></section>
 
-<section class="panel"><div class="panel-h"><h2>② モメンタム（26週前=100 指数）</h2><span class="src">起点比の伸び。絶対規模を除いた勢いの比較</span></div>
+<section class="panel"><div class="panel-h"><h2>② モメンタム（3年前=100 指数・月次）</h2><span class="src">起点比の伸び。絶対規模を除いた勢いの比較</span></div>
   ${momentum()}
-  <p class="note-inline">各社の26週前を100として指数化。線が上＝この半年で伸びている。★＝対象を太線で強調。</p></section>
+  <p class="note-inline">各社の36ヶ月前を100として指数化。線が上＝この3年で伸びている。★＝対象を太線で強調。GfK月次 Streamed Unit。</p></section>
 
-<section class="panel"><div class="panel-h"><h2>③ 比較表</h2><span class="src">最新週/ピーク/26週前比/トップ曲/Wiki関心ピーク/海外%/タイアップ</span></div>
-  <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>アーティスト</th><th class="r">最新週</th><th class="r">期間ピーク</th><th class="r">26週前比</th><th>トップ曲</th><th class="r">Wikiピーク</th><th class="r">海外%</th><th>タイアップ</th></tr></thead>
+<section class="panel"><div class="panel-h"><h2>③ 比較表</h2><span class="src">最新週/3年ピーク/3年前比/トップ曲/Wiki関心ピーク/海外%/タイアップ</span></div>
+  <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>アーティスト</th><th class="r">最新週</th><th class="r">期間ピーク</th><th class="r">3年前比</th><th>トップ曲</th><th class="r">Wikiピーク</th><th class="r">海外%</th><th>タイアップ</th></tr></thead>
   <tbody>${rows}</tbody></table></div>
   <p class="note-inline">海外%はクロノ（SME配給）でのみ算出可。非SMEは「—」。Wikiピークは記事日次PVの期間最大＝お茶の間の瞬間関心。</p></section>
 

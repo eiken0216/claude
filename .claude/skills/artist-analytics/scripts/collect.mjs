@@ -21,12 +21,15 @@ const gfkQuery = arg('gfk', artist.replace(/。$/, ''));
 const wikiTitle = arg('wiki', artist);
 const itunesTerm = arg('itunes', artist.replace(/。$/, ''));
 const qlonoArg = arg('qlono', 'auto');
-const weeks = Number(arg('weeks', 26));
+const weeks = Number(arg('weeks', 8));   // 直近の週次（最新週KPI/WoW用）
+const nMonths = Number(arg('months', 36)); // 月次の遡り月数（3年）
 const out = arg('out', `../../../../reports/${artist.replace(/[\/。]/g, '')}/data.json`);
 const reItunes = new RegExp(itunesTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
 
 const LATEST_MONDAY = arg('latest', '2026-06-29'); // GfK 最新取り込み週の月曜（実行時に調整）
 const mondays = (n) => { const o = []; const d = new Date(LATEST_MONDAY + 'T00:00:00Z'); for (let i = 0; i < n; i++) o.push(new Date(d - i * 7 * 864e5).toISOString().slice(0, 10)); return o.reverse(); };
+// 直近nヶ月の月境界（完全月のみ。LATEST_MONDAYの属する月まで）
+const monthBoundaries = (n) => { const d = new Date(LATEST_MONDAY + 'T00:00:00Z'); const Y = d.getUTCFullYear(), M = d.getUTCMonth(); const out = []; for (let i = 0; i < n; i++) { const f = new Date(Date.UTC(Y, M - i, 1)), l = new Date(Date.UTC(Y, M - i + 1, 0)); out.unshift({ key: f.toISOString().slice(0, 7), start: f.toISOString().slice(0, 10), end: l.toISOString().slice(0, 10) }); } return out; };
 
 const result = { artist, generatedFor: LATEST_MONDAY, availability: {}, sources: {} };
 const log = (m) => process.stderr.write(m + '\n');
@@ -53,12 +56,24 @@ try {
 // ---------- GfK（サブスク・国内 Streamed Unit） ----------
 if (process.env.GFK_EMAIL && process.env.GFK_PASSWORD) {
   try {
-    log('[gfk] weekly trend + catalog...');
+    log(`[gfk] monthly ${nMonths}m (3yr) + weekly ${weeks}w + catalog...`);
     const rc = await makeClient();
-    const wks = mondays(weeks);
     const num = x => Number(x.total_stream_units || 0);
+    // 月次36ヶ月（3年）: 各月の楽曲別を取得 → アーティスト月次合計 ＋ 曲別月次マトリクス
+    const monthly = [], songMonthly = {};
+    for (const mb of monthBoundaries(nMonths)) {
+      let rows = [];
+      for (let i = 0; i < 3 && !rows.length; i++) { try { const r = await queryWeek(rc, gfkQuery, mb.start, mb.end, { gran: 'm', limit: 200 }); if (r.status === 200) rows = r.rows; } catch {} }
+      const top = rows.slice().sort((a, b) => num(b) - num(a))[0];
+      monthly.push({ month: mb.key, artistTotal: rows.reduce((s, x) => s + num(x), 0), topSong: top?.title || null, topSongTotal: top ? num(top) : 0 });
+      // 同月・同名の複数行（フォーマット違い等）は月内で合算してから1点だけ積む（月次系列の重複防止）
+      const byTitle = {};
+      for (const r of rows) { const t = r.title; if (!t) continue; byTitle[t] = (byTitle[t] || 0) + num(r); }
+      for (const [t, v] of Object.entries(byTitle)) (songMonthly[t] = songMonthly[t] || []).push({ month: mb.key, total: v });
+    }
+    // 直近8週（最新週KPI/WoW/最新トップ曲）
     const weekly = [];
-    for (const wk of wks) {
+    for (const wk of mondays(weeks)) {
       let rows = [];
       for (let i = 0; i < 3 && !rows.length; i++) { try { const r = await queryWeek(rc, gfkQuery, wk, wk, { limit: 200 }); if (r.status === 200) rows = r.rows; } catch {} }
       const top = rows.slice().sort((a, b) => num(b) - num(a))[0];
@@ -66,8 +81,11 @@ if (process.env.GFK_EMAIL && process.env.GFK_PASSWORD) {
     }
     const catRows = (await queryWeek(rc, gfkQuery, LATEST_MONDAY, LATEST_MONDAY, { limit: 200 })).rows || [];
     const catalog = catRows.map(x => ({ title: x.title, total: num(x), release: x.release })).filter(t => t.total > 0).sort((a, b) => b.total - a.total).slice(0, 15);
+    // 人気曲上位のGfK月次履歴（非SME向けの「曲別・全期間」用。デイリー不可のため月次）
+    const songTotals = Object.entries(songMonthly).map(([t, ser]) => ({ title: t, total: ser.reduce((s, x) => s + x.total, 0), series: ser }));
+    const topSongsMonthly = songTotals.sort((a, b) => b.total - a.total).slice(0, 5).map(s => ({ title: s.title, total: s.total, series: s.series }));
     await rc.dispose();
-    result.sources.gfk = { metric: 'total_stream_units (Streamed Unit Total)', weekly, catalog };
+    result.sources.gfk = { metric: 'total_stream_units (Streamed Unit Total)', monthly, weekly, catalog, topSongsMonthly };
     result.availability.gfk = 'ok';
   } catch (e) { result.availability.gfk = 'error:' + String(e).slice(0, 80); }
 } else result.availability.gfk = 'skipped: GFK_EMAIL/GFK_PASSWORD 未設定';
@@ -121,6 +139,21 @@ if (qlonoArg !== 'off' && process.env.QLONO_LS_FILE) {
         // トップ曲の日次系列
         const topIsrc = topIsrcs[0];
         const topSeries = periods.map(p => { const it = (p.isrcs || []).find(x => x.isrc === topIsrc); return { date: (p.end_date || '').slice(0, 10), v: it ? Number(it.streaming_quantity || 0) : 0 }; });
+        // 人気曲5曲: デイリー全期間（リリース〜現在）。daily by_isrc を1回で取得し曲別に分解、先頭ゼロ（リリース前）を除去。
+        const dh = await gj(`${B}/reports/brands/${brand}/world_sales/daily/by_isrc?start_date=2023-01-01&end_date=${end}&country_code=JP`);
+        const dper = dh.periods || [];
+        const dsum = {}; for (const p of dper) for (const it of (p.isrcs || [])) dsum[it.isrc] = (dsum[it.isrc] || 0) + Number(it.streaming_quantity || 0);
+        const top5 = Object.entries(dsum).sort((a, b) => b[1] - a[1]).slice(0, 5).map(x => x[0]);
+        const need5 = top5.filter(i => !map[i]);
+        for (let i = 0; i < need5.length; i += 40) {
+          const ip = await gj(`${B}/brands/${brand}/isrc_products?isrcs=${need5.slice(i, i + 40).join(',')}&search_types=`);
+          for (const p of (ip.isrc_products || [])) if (p.isrc) { map[p.isrc] = p.title; rel[p.isrc] = p.released_at || rel[p.isrc]; tie[p.isrc] = tie[p.isrc] || (p.tieups || []).map(x => ({ genre: x.genre, title: x.title })); }
+        }
+        const topSongsDaily = top5.map(isrc => {
+          let ser = dper.map(p => { const it = (p.isrcs || []).find(x => x.isrc === isrc); return { date: (p.end_date || '').slice(0, 10), v: it ? Number(it.streaming_quantity || 0) : 0 }; });
+          const fnz = ser.findIndex(x => x.v > 0); if (fnz > 0) ser = ser.slice(fnz);
+          return { isrc, title: map[isrc] || '?', released: rel[isrc] || null, total: dsum[isrc], tieups: tie[isrc] || [], series: ser };
+        });
         // デモグラ（サービス横断サマリ）
         const demo = await gj(`${B}/reports/brands/${brand}/streaming_services/demographics/by_services/summaries?start_date=${start.replace(/-/g, '')}&end_date=${end.replace(/-/g, '')}&country_code=JP`);
         // 海外再生（国別・累計）— クロノでしか見れない。主要市場の country_code を順に集計。
@@ -132,7 +165,7 @@ if (qlonoArg !== 'off' && process.env.QLONO_LS_FILE) {
           if (tot > 0) overseas.push({ country: cc, streams: tot });
         }
         overseas.sort((a, b) => b.streams - a.streams);
-        return { brand, catalog, topSong: map[topIsrc] || null, topSeries, dsp, demographics: demo, overseasByCountry: overseas };
+        return { brand, catalog, topSong: map[topIsrc] || null, topSeries, topSongsDaily, dsp, demographics: demo, overseasByCountry: overseas };
       }, brand);
       result.sources.qlono = data;
       result.availability.qlono = 'ok';

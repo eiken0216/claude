@@ -56,6 +56,46 @@ function barChart(rows, { max, color = 'var(--self)', unit = '' } = {}) {
       <div class="bar-val">${jp(r.v)}${unit}</div></div>`).join('') + `</div>`;
 }
 
+// ---------- スパークライン（曲別・小さな折れ線） ----------
+const relFmt = r => { if (!r) return '配信日—'; const s = String(r); return s.includes('-') ? s.slice(0, 10) : s.replace(/(\d{4})(\d{2})(\d{2}).*/, '$1-$2-$3'); };
+function sparkline(pts, color) {
+  pts = pts.filter(p => isFinite(p.v));
+  if (pts.length < 2) return `<div class="empty" style="padding:8px">データ不足</div>`;
+  const w = 320, h = 70, pad = { l: 4, r: 4, t: 9, b: 4 };
+  const xs = i => pad.l + i * (w - pad.l - pad.r) / (pts.length - 1);
+  const mx = Math.max(...pts.map(p => p.v)) || 1;
+  const ys = v => h - pad.b - (v / mx) * (h - pad.t - pad.b);
+  const line = pts.map((p, i) => `${i ? 'L' : 'M'}${xs(i).toFixed(1)},${ys(p.v).toFixed(1)}`).join(' ');
+  const area = `M${xs(0).toFixed(1)},${h - pad.b} ` + pts.map((p, i) => `L${xs(i).toFixed(1)},${ys(p.v).toFixed(1)}`).join(' ') + ` L${xs(pts.length - 1).toFixed(1)},${h - pad.b} Z`;
+  const pk = pts.reduce((a, p, i) => p.v > pts[a].v ? i : a, 0);
+  return `<svg viewBox="0 0 ${w} ${h}" class="spark" role="img"><path d="${area}" fill="${color}" opacity="0.13"/><path d="${line}" fill="none" stroke="${color}" stroke-width="1.6"/><circle cx="${xs(pk).toFixed(1)}" cy="${ys(pts[pk].v).toFixed(1)}" r="2.6" fill="${color}"/></svg>`;
+}
+function songMultiples(songs, mode) { // mode: 'daily' | 'monthly'
+  const SC = ['var(--self)', 'var(--rival)', '#8a6fd0', 'var(--good)', 'var(--warn)'];
+  return `<div class="mults">` + songs.map((s, i) => {
+    const pts = (s.series || []).map(p => mode === 'daily' ? { x: p.date, v: p.v } : { x: p.month, v: p.total });
+    const peak = Math.max(0, ...pts.map(p => p.v));
+    const first = pts.length ? pts[0].x : '';
+    const tie = (s.tieups || [])[0];
+    const total = s.total != null ? s.total : pts.reduce((a, p) => a + p.v, 0);
+    return `<div class="mult"><div class="mult-h"><span class="mult-t">${i + 1}. ${esc(s.title)}</span>${tie ? `<span class="chip">${esc(tie.genre || '')}</span>` : ''}</div>
+      <div class="mult-m">${esc(relFmt(s.released))} ・ ${mode === 'daily' ? '累計' : '36ヶ月計'} ${jp(total)}</div>
+      ${sparkline(pts, SC[i % SC.length])}
+      <div class="mult-f"><span>ピーク ${jp(peak)}/${mode === 'daily' ? '日' : '月'}</span><span>${mode === 'daily' ? 'デイリー' : '月次'}・${esc(first)}〜</span></div></div>`;
+  }).join('') + `</div>`;
+}
+let top5Panel = '';
+if (qlono?.topSongsDaily?.length) {
+  top5Panel = `<section class="panel"><div class="panel-h"><h2>人気曲5曲・デイリー推移（リリース〜現在）</h2><span class="src">クロノ world_sales 日次・全期間</span></div>
+    ${songMultiples(qlono.topSongsDaily, 'daily')}</section>`;
+} else if (gfk?.topSongsMonthly?.length) {
+  const relMap = Object.fromEntries((gfk.catalog || []).map(c => [c.title, c.release]));
+  const songs = gfk.topSongsMonthly.map(s => ({ ...s, released: relMap[s.title] }));
+  top5Panel = `<section class="panel"><div class="panel-h"><h2>人気曲5曲・月次推移（直近3年）</h2><span class="src">GfK 月次・曲別デイリーは非SME不可</span></div>
+    ${songMultiples(songs, 'monthly')}
+    <p class="note-inline">非SME配給のため曲別デイリーは取得不可。GfK月次で直近3年の推移を表示（デイリー相当はSME配給曲のみ）。GfKは曲名単位の集計（同名別バージョンを含む場合あり）。</p></section>`;
+}
+
 // ---------- KPI群 ----------
 // 横比較の共通軸として、GfK週次 artistTotal を常に先頭に（18本中ほとんどが非SME=GfKのみのため）。
 // SME配給ならクロノの per-song 28日・海外比率を「濃い補足」として追加。
@@ -78,19 +118,19 @@ if (qlono?.overseasByCountry?.length) {
 const itHit = (charts?.itunesJP || [])[0];
 if (itHit) kpis.push({ k: 'iTunes JP 最高位', v: '#' + itHit.rank, sub: esc(itHit.name || ''), d: null, small: true });
 
-// ---------- サブスク推移（GfK週次を共通軸に） ----------
+// ---------- サブスク推移（GfK月次・直近3年を共通軸に） ----------
 let trendPanel = '';
-if (gfk?.weekly?.length >= 2) {
-  const series = gfk.weekly.map(w => ({ x: w.week.slice(5), v: w.artistTotal }));
-  const wk = gfk.weekly, last = wk[wk.length - 1].artistTotal, first = wk[0].artistTotal;
-  const peak = Math.max(...wk.map(w => w.artistTotal));
+if (gfk?.monthly?.length >= 2) {
+  const mo = gfk.monthly, series = mo.map(m => ({ x: m.month.slice(2), v: m.artistTotal }));
+  const last = mo[mo.length - 1].artistTotal, first = mo[0].artistTotal;
+  const peak = Math.max(...mo.map(m => m.artistTotal)), peakMo = mo.find(m => m.artistTotal === peak);
   trendPanel = `<section class="panel">
-    <div class="panel-h"><h2>国内サブスク推移</h2><span class="src">GfK Streamed Unit・週次・${wk.length}週</span></div>
-    ${lineChart(series, { label: '国内サブスク週次推移' })}
+    <div class="panel-h"><h2>国内サブスク推移（直近3年）</h2><span class="src">GfK Streamed Unit・月次・${mo.length}ヶ月</span></div>
+    ${lineChart(series, { label: '国内サブスク月次推移3年' })}
     <div class="mini-row">
-      <div class="mini"><span>期間内ピーク</span><b>${jp(peak)}</b></div>
-      <div class="mini"><span>${wk.length}週前比</span><b class="${last >= first ? 'up' : 'down'}">${first ? (pct(last, first) >= 0 ? '+' : '') + pct(last, first).toFixed(0) + '%' : '—'}</b></div>
-      <div class="mini"><span>最新週</span><b>${jp(last)}</b></div>
+      <div class="mini"><span>ピーク月（${esc(peakMo?.month || '')}）</span><b>${jp(peak)}</b></div>
+      <div class="mini"><span>3年前比</span><b class="${last >= first ? 'up' : 'down'}">${first ? (pct(last, first) >= 0 ? '+' : '') + pct(last, first).toFixed(0) + '%' : '—'}</b></div>
+      <div class="mini"><span>直近月（${esc(mo[mo.length - 1].month)}）</span><b>${jp(last)}</b></div>
     </div></section>`;
 } else if (qlono?.topSeries?.length >= 2) {
   const series = qlono.topSeries.map(p => ({ x: (p.date || '').slice(5), v: p.v }));
@@ -236,6 +276,13 @@ h1{font-size:30px;margin:4px 0 8px;letter-spacing:-.01em}
 .faint{color:var(--faint)}
 .empty{color:var(--faint);font-size:13px;padding:14px;text-align:center;background:var(--panel-2);border-radius:8px}
 .note-inline{font-size:11.5px;color:var(--faint);margin:8px 0 0}
+.mults{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:12px;margin-top:2px}
+.mult{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--panel-2)}
+.mult-h{display:flex;align-items:center;gap:6px;justify-content:space-between}
+.mult-t{font-weight:600;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mult-m{font-size:11px;color:var(--faint);margin:2px 0 4px}
+.spark{width:100%;height:auto;display:block}
+.mult-f{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin-top:3px}
 .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:720px){.cols{grid-template-columns:1fr}}
 .foot{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
@@ -262,6 +309,7 @@ ${kpis.map(k => `<div class="kpi"><div class="k">${esc(k.k)}</div>
 </div>
 
 ${trendPanel}
+${top5Panel}
 <div class="cols">${overseasPanel}${wikiPanel}</div>
 ${catalogPanel}
 ${demoPanel}
