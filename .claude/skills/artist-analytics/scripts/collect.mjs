@@ -56,36 +56,40 @@ try {
 // ---------- GfK（サブスク・国内 Streamed Unit） ----------
 if (process.env.GFK_EMAIL && process.env.GFK_PASSWORD) {
   try {
-    log(`[gfk] monthly ${nMonths}m (3yr) + weekly ${weeks}w + catalog...`);
+    const WKHIST = Number(arg('wkhist', 156)); // 3年分の週次（曲別ウィークリー＝非SMEの単曲分析用）
+    log(`[gfk] weekly x${WKHIST} (3yr) -> monthly trend + 曲別週次 + catalog...`);
     const rc = await makeClient();
     const num = x => Number(x.total_stream_units || 0);
-    // 月次36ヶ月（3年）: 各月の楽曲別を取得 → アーティスト月次合計 ＋ 曲別月次マトリクス
-    const monthly = [], songMonthly = {};
-    for (const mb of monthBoundaries(nMonths)) {
-      let rows = [];
-      for (let i = 0; i < 3 && !rows.length; i++) { try { const r = await queryWeek(rc, gfkQuery, mb.start, mb.end, { gran: 'm', limit: 200 }); if (r.status === 200) rows = r.rows; } catch {} }
-      const top = rows.slice().sort((a, b) => num(b) - num(a))[0];
-      monthly.push({ month: mb.key, artistTotal: rows.reduce((s, x) => s + num(x), 0), topSong: top?.title || null, topSongTotal: top ? num(top) : 0 });
-      // 同月・同名の複数行（フォーマット違い等）は月内で合算してから1点だけ積む（月次系列の重複防止）
-      const byTitle = {};
-      for (const r of rows) { const t = r.title; if (!t) continue; byTitle[t] = (byTitle[t] || 0) + num(r); }
-      for (const [t, v] of Object.entries(byTitle)) (songMonthly[t] = songMonthly[t] || []).push({ month: mb.key, total: v });
-    }
-    // 直近8週（最新週KPI/WoW/最新トップ曲）
-    const weekly = [];
-    for (const wk of mondays(weeks)) {
+    // 3年分の週次（各週=全曲）→ アーティスト週次 ＋ 曲別週次マトリクス ＋ 曲別リリース日
+    const artistWeekly = [], songWeekly = {}, songRelease = {};
+    for (const wk of mondays(WKHIST)) {
       let rows = [];
       for (let i = 0; i < 3 && !rows.length; i++) { try { const r = await queryWeek(rc, gfkQuery, wk, wk, { limit: 200 }); if (r.status === 200) rows = r.rows; } catch {} }
       const top = rows.slice().sort((a, b) => num(b) - num(a))[0];
-      weekly.push({ week: wk, artistTotal: rows.reduce((s, x) => s + num(x), 0), topSong: top?.title || null, topSongTotal: top ? num(top) : 0 });
+      artistWeekly.push({ week: wk, artistTotal: rows.reduce((s, x) => s + num(x), 0), topSong: top?.title || null, topSongTotal: top ? num(top) : 0 });
+      const byTitle = {};
+      for (const r of rows) { const t = r.title; if (!t) continue; byTitle[t] = (byTitle[t] || 0) + num(r); if (!songRelease[t] && r.release) songRelease[t] = r.release; }
+      for (const [t, v] of Object.entries(byTitle)) (songWeekly[t] = songWeekly[t] || []).push({ week: wk, v });
     }
+    // 月次集計（アーティスト3年トレンド用。週→月へ合算）
+    const mmap = {};
+    for (const w of artistWeekly) { const m = w.week.slice(0, 7); mmap[m] = (mmap[m] || 0) + w.artistTotal; }
+    const songMonthlyMap = {};
+    for (const [t, ser] of Object.entries(songWeekly)) { const mm = songMonthlyMap[t] = {}; for (const p of ser) { const m = p.week.slice(0, 7); mm[m] = (mm[m] || 0) + p.v; } }
+    const monthly = Object.keys(mmap).sort().map(m => {
+      let topSong = null, topSongTotal = 0;
+      for (const [t, mm] of Object.entries(songMonthlyMap)) { const v = mm[m] || 0; if (v > topSongTotal) { topSongTotal = v; topSong = t; } }
+      return { month: m, artistTotal: mmap[m], topSong, topSongTotal };
+    });
+    const weekly = artistWeekly.slice(-8); // 最新8週（KPI/WoW）
     const catRows = (await queryWeek(rc, gfkQuery, LATEST_MONDAY, LATEST_MONDAY, { limit: 200 })).rows || [];
-    const catalog = catRows.map(x => ({ title: x.title, total: num(x), release: x.release })).filter(t => t.total > 0).sort((a, b) => b.total - a.total).slice(0, 15);
-    // 人気曲上位のGfK月次履歴（非SME向けの「曲別・全期間」用。デイリー不可のため月次）
-    const songTotals = Object.entries(songMonthly).map(([t, ser]) => ({ title: t, total: ser.reduce((s, x) => s + x.total, 0), series: ser }));
-    const topSongsMonthly = songTotals.sort((a, b) => b.total - a.total).slice(0, 5).map(s => ({ title: s.title, total: s.total, series: s.series }));
+    const peakW = t => { const s = songWeekly[t] || []; return s.length ? Math.max(...s.map(x => x.v)) : 0; };
+    const catalog = catRows.map(x => ({ title: x.title, total: num(x), release: x.release, peakWeekly: peakW(x.title) })).filter(t => t.total > 0).sort((a, b) => b.total - a.total).slice(0, 15);
+    // 人気曲上位5のGfK週次（非SME向けの単曲分析・全期間リリース〜現在）
+    const songTotals = Object.entries(songWeekly).map(([t, ser]) => ({ title: t, total: ser.reduce((s, x) => s + x.v, 0), series: ser.map(p => ({ week: p.week, total: p.v })), peakWeekly: Math.max(...ser.map(x => x.v)), release: songRelease[t] || null }));
+    const topSongsWeekly = songTotals.sort((a, b) => b.total - a.total).slice(0, 5);
     await rc.dispose();
-    result.sources.gfk = { metric: 'total_stream_units (Streamed Unit Total)', monthly, weekly, catalog, topSongsMonthly };
+    result.sources.gfk = { metric: 'total_stream_units (Streamed Unit Total)', monthly, weekly, catalog, topSongsWeekly };
     result.availability.gfk = 'ok';
   } catch (e) { result.availability.gfk = 'error:' + String(e).slice(0, 80); }
 } else result.availability.gfk = 'skipped: GFK_EMAIL/GFK_PASSWORD 未設定';
@@ -154,6 +158,10 @@ if (qlonoArg !== 'off' && process.env.QLONO_LS_FILE) {
           const fnz = ser.findIndex(x => x.v > 0); if (fnz > 0) ser = ser.slice(fnz);
           return { isrc, title: map[isrc] || '?', released: rel[isrc] || null, total: dsum[isrc], tieups: tie[isrc] || [], series: ser };
         });
+        // カタログ各曲のデイリー最高値（全期間）
+        const peakDailyMap = {};
+        for (const p of dper) for (const it of (p.isrcs || [])) { const v = Number(it.streaming_quantity || 0); if (v > (peakDailyMap[it.isrc] || 0)) peakDailyMap[it.isrc] = v; }
+        for (const c of catalog) c.peakDaily = peakDailyMap[c.isrc] || 0;
         // デモグラ（サービス横断サマリ）
         const demo = await gj(`${B}/reports/brands/${brand}/streaming_services/demographics/by_services/summaries?start_date=${start.replace(/-/g, '')}&end_date=${end.replace(/-/g, '')}&country_code=JP`);
         // 海外再生（国別・累計）— クロノでしか見れない。主要市場の country_code を順に集計。
