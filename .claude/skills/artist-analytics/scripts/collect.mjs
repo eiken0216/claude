@@ -120,7 +120,9 @@ if (qlonoArg !== 'off' && process.env.QLONO_LS_FILE) {
     }
     if (!brand) { result.availability.qlono = `not-found: 「${artist}」はQlonoLink(SME内部DB)で検索ヒットなし＝SME配給でない可能性。GfK＋Webで分析。SMEなら --qlono <brand_id> 指定も可`; }
     else {
-      const data = await page.evaluate(async (brand) => {
+      // 全期間デイリーは大カタログ(20年級)でもrendererが落ちないよう6ヶ月チャンク×2パスで取得。
+      const chunks = []; { const s = new Date('2023-01-01T00:00:00Z'); const endD = new Date(Date.now() - 864e5); let c = new Date(s); while (c < endD) { const e = new Date(Date.UTC(c.getUTCFullYear(), c.getUTCMonth() + 6, 0)); chunks.push([c.toISOString().slice(0, 10), (e < endD ? e : endD).toISOString().slice(0, 10)]); c = new Date(Date.UTC(c.getUTCFullYear(), c.getUTCMonth() + 6, 1)); } }
+      const data = await page.evaluate(async ({ brand, chunks }) => {
         const auth = localStorage.getItem(Object.keys(localStorage).find(k => k.endsWith('.idToken')));
         const B = 'https://prod-sme.analytics.qlonolink.com/smeapi';
         const gj = async u => { const r = await fetch(u, { headers: { authorization: auth } }); return r.ok ? r.json() : { __err: r.status }; };
@@ -143,25 +145,26 @@ if (qlonoArg !== 'off' && process.env.QLONO_LS_FILE) {
         // トップ曲の日次系列
         const topIsrc = topIsrcs[0];
         const topSeries = periods.map(p => { const it = (p.isrcs || []).find(x => x.isrc === topIsrc); return { date: (p.end_date || '').slice(0, 10), v: it ? Number(it.streaming_quantity || 0) : 0 }; });
-        // 人気曲5曲: デイリー全期間（リリース〜現在）。daily by_isrc を1回で取得し曲別に分解、先頭ゼロ（リリース前）を除去。
-        const dh = await gj(`${B}/reports/brands/${brand}/world_sales/daily/by_isrc?start_date=2023-01-01&end_date=${end}&country_code=JP`);
-        const dper = dh.periods || [];
-        const dsum = {}; for (const p of dper) for (const it of (p.isrcs || [])) dsum[it.isrc] = (dsum[it.isrc] || 0) + Number(it.streaming_quantity || 0);
+        // 人気曲5曲: デイリー全期間（リリース〜現在）。大カタログ対策で6ヶ月チャンク×2パス（メモリ節約）。
+        const dsum = {}, peakDailyMap = {};
+        for (const [cs, ce] of chunks) {
+          const r = await gj(`${B}/reports/brands/${brand}/world_sales/daily/by_isrc?start_date=${cs}&end_date=${ce}&country_code=JP`);
+          for (const p of (r.periods || [])) for (const it of (p.isrcs || [])) { const v = Number(it.streaming_quantity || 0); dsum[it.isrc] = (dsum[it.isrc] || 0) + v; if (v > (peakDailyMap[it.isrc] || 0)) peakDailyMap[it.isrc] = v; }
+        }
         const top5 = Object.entries(dsum).sort((a, b) => b[1] - a[1]).slice(0, 5).map(x => x[0]);
+        const top5set = new Set(top5);
         const need5 = top5.filter(i => !map[i]);
         for (let i = 0; i < need5.length; i += 40) {
           const ip = await gj(`${B}/brands/${brand}/isrc_products?isrcs=${need5.slice(i, i + 40).join(',')}&search_types=`);
           for (const p of (ip.isrc_products || [])) if (p.isrc) { map[p.isrc] = p.title; rel[p.isrc] = p.released_at || rel[p.isrc]; tie[p.isrc] = tie[p.isrc] || (p.tieups || []).map(x => ({ genre: x.genre, title: x.title })); }
         }
-        const topSongsDaily = top5.map(isrc => {
-          let ser = dper.map(p => { const it = (p.isrcs || []).find(x => x.isrc === isrc); return { date: (p.end_date || '').slice(0, 10), v: it ? Number(it.streaming_quantity || 0) : 0 }; });
-          const fnz = ser.findIndex(x => x.v > 0); if (fnz > 0) ser = ser.slice(fnz);
-          return { isrc, title: map[isrc] || '?', released: rel[isrc] || null, total: dsum[isrc], tieups: tie[isrc] || [], series: ser };
-        });
-        // カタログ各曲のデイリー最高値（全期間）
-        const peakDailyMap = {};
-        for (const p of dper) for (const it of (p.isrcs || [])) { const v = Number(it.streaming_quantity || 0); if (v > (peakDailyMap[it.isrc] || 0)) peakDailyMap[it.isrc] = v; }
+        const seriesMap = {}; top5.forEach(i => seriesMap[i] = []);
+        for (const [cs, ce] of chunks) {
+          const r = await gj(`${B}/reports/brands/${brand}/world_sales/daily/by_isrc?start_date=${cs}&end_date=${ce}&country_code=JP`);
+          for (const p of (r.periods || [])) { const date = (p.end_date || '').slice(0, 10); for (const it of (p.isrcs || [])) if (top5set.has(it.isrc)) seriesMap[it.isrc].push({ date, v: Number(it.streaming_quantity || 0) }); }
+        }
         for (const c of catalog) c.peakDaily = peakDailyMap[c.isrc] || 0;
+        const topSongsDaily = top5.map(isrc => { let ser = (seriesMap[isrc] || []).sort((a, b) => a.date < b.date ? -1 : 1); const fnz = ser.findIndex(x => x.v > 0); if (fnz > 0) ser = ser.slice(fnz); return { isrc, title: map[isrc] || '?', released: rel[isrc] || null, total: dsum[isrc], tieups: tie[isrc] || [], series: ser }; });
         // デモグラ（サービス横断サマリ）
         const demo = await gj(`${B}/reports/brands/${brand}/streaming_services/demographics/by_services/summaries?start_date=${start.replace(/-/g, '')}&end_date=${end.replace(/-/g, '')}&country_code=JP`);
         // 海外再生（国別・累計）— クロノでしか見れない。主要市場の country_code を順に集計。
@@ -174,7 +177,7 @@ if (qlonoArg !== 'off' && process.env.QLONO_LS_FILE) {
         }
         overseas.sort((a, b) => b.streams - a.streams);
         return { brand, catalog, topSong: map[topIsrc] || null, topSeries, topSongsDaily, dsp, demographics: demo, overseasByCountry: overseas };
-      }, brand);
+      }, { brand, chunks });
       result.sources.qlono = data;
       result.availability.qlono = 'ok';
     }
