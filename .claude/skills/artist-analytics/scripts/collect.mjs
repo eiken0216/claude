@@ -202,3 +202,5 @@ fs.mkdirSync(path.dirname(out), { recursive: true });
 fs.writeFileSync(out, JSON.stringify(result, null, 1));
 log(`\nsaved ${out}`);
 console.log(JSON.stringify(result.availability, null, 1));
+// ブラウザ等の残存ハンドルでプロセスがハングし、バッチ全体が止まるのを防ぐため即時終了。
+process.exit(0);
