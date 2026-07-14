@@ -99,16 +99,20 @@ function songMultiples(songs, mode) { // mode: 'daily' | 'weekly'
   const SC = ['var(--self)', 'var(--rival)', '#8a6fd0', 'var(--good)', 'var(--warn)'];
   const unit = mode === 'daily' ? '日' : '週';
   return `<div class="mults">` + songs.map((s, i) => {
-    const pts = (s.series || []).map(p => ({ x: mode === 'daily' ? p.date : p.week, v: mode === 'daily' ? p.v : p.total }));
+    let pts = (s.series || []).map(p => ({ x: mode === 'daily' ? p.date : p.week, v: mode === 'daily' ? p.v : p.total }));
+    const fnz = pts.findIndex(p => p.v > 0); if (fnz > 0) pts = pts.slice(fnz); // 未配信期間（先頭ゼロ）を除去→線とRelを実初動に合わせる
     const peak = Math.max(0, ...pts.map(p => p.v));
-    const total = s.total != null ? s.total : pts.reduce((a, p) => a + p.v, 0);
+    const total = pts.reduce((a, p) => a + p.v, 0);
+    const onset = pts.length ? pts[0].x : '';
+    // SMEはクロノの正確な配信日、非SMEはGfK release欄が再発売日等で不正確なためデータ初動を採用
+    const relLabel = mode === 'daily' ? `配信 ${esc(relFmt(s.released))}` : `初動 ${esc(onset)}`;
     const tieA = tieups[s.title];
     const tieQ = (s.tieups || [])[0];
     const tieShort = tieA ? tieA.label : (tieQ ? (tieQ.genre || '') : '');
     const tieFull = tieA ? tieA.label : (tieQ ? (tieQ.genre || '') + (tieQ.title ? '：' + tieQ.title : '') : '');
     const camp = campaigns[s.title];
     return `<div class="mult"><div class="mult-h"><span class="mult-t">${i + 1}. ${esc(s.title)}</span>${tieShort ? `<span class="chip" title="${esc(tieFull)}">${esc(tieShort)}</span>` : ''}</div>
-      <div class="mult-m">配信 ${esc(relFmt(s.released))} ・ ${mode === 'daily' ? '累計' : '3年計'} ${jp(total)} ・ 最高 ${jp(peak)}/${unit}</div>
+      <div class="mult-m">${relLabel} ・ ${mode === 'daily' ? '累計' : '3年計'} ${jp(total)} ・ 最高 ${jp(peak)}/${unit}</div>
       ${songChart(pts, SC[i % SC.length], unit)}
       ${camp ? `<div class="camp">※ ${esc(camp)}</div>` : ''}</div>`;
   }).join('') + `</div>`;
