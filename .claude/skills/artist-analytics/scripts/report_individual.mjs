@@ -260,6 +260,64 @@ if (Array.isArray(demo) && demo.length && demo.some(s => s.gender || s.age_range
     <div><div class="sub-h">年代分布（${esc(asvc.service_id || '')}）</div>${ageBars}</div></div></section>`;
 }
 
+// ---------- キャリア変遷（年表: リリース × ライブ会場キャパ × サブスク ＋ マイルストーン） ----------
+const live = d.sources?.live;
+let careerPanel = '';
+{
+  const pd = s => { if (!s) return null; const t = String(s); let m; if ((m = t.match(/^(\d{4})(\d{2})(\d{2})/))) return new Date(+m[1], +m[2] - 1, +m[3]).getTime(); if (t.includes('-')) { const x = new Date(t.slice(0, 10)); return isFinite(x) ? x.getTime() : null; } return null; };
+  const rels = cat.map(c => ({ t: pd(c.rel), title: c.title, tie: (tieups[c.title]?.label) || ((c.tie || [])[0] ? ((c.tie[0].genre || '') + (c.tie[0].title ? '：' + c.tie[0].title : '')) : '') })).filter(r => r.t).sort((a, b) => a.t - b.t);
+  const evs = (live?.events || []).map(e => ({ ...e, t: pd(e.date) })).filter(e => e.t).sort((a, b) => a.t - b.t);
+  const monthly = (gfk?.monthly || []).map(m => ({ t: pd(m.month + '-01'), v: m.artistTotal })).filter(m => m.t);
+  const allT = [...rels.map(r => r.t), ...evs.map(e => e.t)];
+  if (allT.length >= 2 || (allT.length && monthly.length)) {
+    const NOW = Date.now();
+    const t0 = Math.min(...allT, ...monthly.map(m => m.t)), t1 = Math.max(...allT, ...monthly.map(m => m.t), NOW);
+    const debut = Math.min(...(rels.length ? [rels[0].t] : []), ...(evs.length ? [evs[0].t] : []));
+    const oneman = evs.filter(e => e.type === '単独' || e.type === 'ツアー');
+    const firstOneman = oneman[0] || null;
+    const capped = evs.filter(e => e.capacity).slice().sort((a, b) => b.capacity - a.capacity);
+    const biggest = capped[0] || null;
+    const years = ((t1 - t0) / (365.25 * 864e5));
+    const yfmt = ms => new Date(ms).toISOString().slice(0, 7);
+    // --- SVG ---
+    const W = 900, H = 220, padL = 66, padR = 12;
+    const X = t => padL + (t - t0) / ((t1 - t0) || 1) * (W - padL - padR);
+    const yRel = 40, yLive = 108, ySub = 186, subH = 50;
+    const y0 = new Date(t0).getFullYear(), y1 = new Date(t1).getFullYear(), span = y1 - y0;
+    const yrTicks = []; for (let y = Math.ceil(y0); y <= y1; y++) if (span <= 9 || y % 2 === 0) yrTicks.push(y);
+    const grid = yrTicks.map(y => { const xx = X(new Date(y, 0, 1).getTime()); return `<line x1="${xx}" y1="18" x2="${xx}" y2="${H - 16}" class="cgrid"/><text x="${xx}" y="${H - 3}" class="cyr">${y}</text>`; }).join('');
+    const relTicks = rels.map(r => { const xx = X(r.t), tie = !!r.tie; return `<line x1="${xx.toFixed(1)}" y1="${yRel - (tie ? 15 : 9)}" x2="${xx.toFixed(1)}" y2="${yRel}" stroke="${tie ? 'var(--self)' : 'var(--faint)'}" stroke-width="${tie ? 2.2 : 1.3}"/>${tie ? `<circle cx="${xx.toFixed(1)}" cy="${yRel - 15}" r="2.2" fill="var(--self)"/>` : ''}`; }).join('');
+    const tCol = t => t === '単独' ? 'var(--crit)' : t === 'ツアー' ? 'var(--self)' : t === 'フェス' ? 'var(--warn)' : 'var(--faint)';
+    const liveDots = evs.map(e => { const xx = X(e.t), big = e.type === '単独' || e.type === 'ツアー'; return `<circle cx="${xx.toFixed(1)}" cy="${yLive}" r="${big ? 3.6 : 2.4}" fill="${tCol(e.type)}" opacity="${big ? 0.95 : 0.5}"/>`; }).join('');
+    const capLab = capped.slice(0, 5).map(e => `<text x="${X(e.t).toFixed(1)}" y="${yLive - 9}" class="ccap" text-anchor="middle">${e.capacity >= 10000 ? (e.capacity / 1e4).toFixed(1).replace(/\.0$/, '') + '万' : (e.capacity / 1000).toFixed(1).replace(/\.0$/, '') + 'k'}</text>`).join('');
+    let subPath = '';
+    if (monthly.length >= 2) { const mx = Math.max(...monthly.map(m => m.v)) || 1; const sy = v => ySub - (v / mx) * subH; const pts = monthly.map(m => `${X(m.t).toFixed(1)},${sy(m.v).toFixed(1)}`); subPath = `<path d="M${X(monthly[0].t).toFixed(1)},${ySub} L${pts.join(' L')} L${X(monthly[monthly.length - 1].t).toFixed(1)},${ySub} Z" fill="var(--self-soft)"/><path d="M${pts.join(' L')}" fill="none" stroke="var(--self)" stroke-width="1.6"/><text x="${X(monthly[monthly.length - 1].t).toFixed(1)}" y="${ySub - (monthly[monthly.length - 1].v / mx) * subH - 4}" class="csub" text-anchor="end">${jp(monthly[monthly.length - 1].v)}/月</text>`; }
+    const mline = (t, lab, col) => (t && isFinite(t)) ? `<line x1="${X(t).toFixed(1)}" y1="16" x2="${X(t).toFixed(1)}" y2="${H - 16}" stroke="${col}" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.75"/><text x="${X(t).toFixed(1) - 0 + 3}" y="26" class="cms" fill="${col}">${esc(lab)}</text>` : '';
+    const msLines = mline(debut, 'デビュー', 'var(--good)') + (firstOneman && firstOneman.t !== debut ? mline(firstOneman.t, '初' + (firstOneman.type === 'ツアー' ? 'ツアー' : '単独'), 'var(--crit)') : '');
+    const laneLab = `<text x="4" y="${yRel + 3}" class="clane">リリース</text><text x="4" y="${yLive + 3}" class="clane">ライブ</text><text x="4" y="${ySub - subH / 2}" class="clane">サブスク<tspan x="4" dy="12">(直近3年)</tspan></text>`;
+    const svg = `<svg viewBox="0 0 ${W} ${H}" class="ctl" role="img" aria-label="キャリア変遷年表">${grid}${msLines}${relTicks}${liveDots}${capLab}${subPath}${laneLab}</svg>`;
+    // --- metrics ---
+    const relFreq = rels.length >= 2 ? (years * 12 / rels.length) : null; // 主要リリースの平均間隔(月)
+    const bt = live?.summary?.byType || {};
+    const mrow = [
+      { s: '活動期間', b: years.toFixed(1) + '年', x: 'デビュー ' + (isFinite(debut) ? yfmt(debut) : '—') },
+      { s: '主要リリース', b: rels.length + '曲', x: relFreq ? '約' + relFreq.toFixed(1) + 'ヶ月/曲' : '' },
+      { s: 'ライブ(公演DB)', b: (live?.summary?.total || 0) + '件', x: Object.entries(bt).map(([k, v]) => k + v).join(' ') },
+      { s: '初 単独/ツアー', b: firstOneman ? yfmt(firstOneman.t) : '<span class="faint">DB未記録</span>', x: firstOneman ? esc((firstOneman.venue || '').slice(0, 14)) : '' },
+      { s: '最大会場(既知キャパ)', b: biggest ? (biggest.capacity >= 10000 ? (biggest.capacity / 1e4).toFixed(1).replace(/\.0$/, '') + '万' : comma(biggest.capacity)) : '<span class="faint">未照合</span>', x: biggest ? esc((biggest.venue || '').slice(0, 14)) : '' },
+    ];
+    const av2 = av.live || '未取得';
+    careerPanel = `<section class="panel"><div class="panel-h"><h2>キャリア変遷（年表）</h2><span class="src">リリース×ライブ会場キャパ×サブスク・${av.live === 'ok' ? '公演DB=eventernote' : esc(String(av2).slice(0, 24))}</span></div>
+      <div class="cmetrics">${mrow.map(m => `<div class="cm"><span>${m.s}</span><b>${m.b}</b><small>${m.x}</small></div>`).join('')}</div>
+      ${svg}
+      <div class="clegend"><span><i style="background:var(--self)"></i>リリース(タイアップ付=●)</span><span><i style="background:var(--crit)"></i>単独</span><span><i style="background:var(--self)"></i>ツアー</span><span><i style="background:var(--warn)"></i>フェス</span><span><i style="background:var(--faint)"></i>対バン/イベント</span></div>
+      <p class="note-inline">ライブ履歴は公演DB(eventernote)で、フェス網羅は強いが単独公演(ワンマン)は漏れることがある。会場キャパはvenues.json照合分のみ（未登録は「未照合」）。サブスクはGfK直近3年のみ（それ以前は非対応）。best-effort・要検証。</p></section>`;
+  } else {
+    careerPanel = `<section class="panel"><div class="panel-h"><h2>キャリア変遷（年表）</h2><span class="src">${esc(String(av.live || 'ライブ履歴未取得').slice(0, 40))}</span></div>
+      <div class="empty">リリース／ライブ履歴が不足のため年表化不可（新人・海外勢・公演DB未収録など）。取得できたリリース／サブスクは上部パネル参照。</div></section>`;
+  }
+}
+
 // ---------- 未取得ソース ----------
 const skipped = Object.entries(av).filter(([k, v]) => /skipped|not-found|manual|error|no-data/.test(String(v)) && !['googleTrends', 'naverDataLab', 'joysound', 'igxFollowers', 'tiktokUGC'].includes(k));
 const manualList = ['googleTrends', 'naverDataLab', 'joysound', 'igxFollowers'].map(k => av[k]).filter(Boolean);
@@ -340,6 +398,15 @@ h1{font-size:30px;margin:4px 0 8px;letter-spacing:-.01em}
 .rellab{fill:var(--good);font-size:8.5px;font-weight:700}
 .spikelab{fill:var(--ink-soft);font-size:9.5px;font-weight:700}
 .star{color:var(--warn);font-weight:700;margin-left:3px;cursor:help}
+.ctl{width:100%;height:auto;display:block;overflow:visible;margin-top:4px}
+.cgrid{stroke:var(--hair);stroke-width:1}.cyr{fill:var(--faint);font-size:9px;text-anchor:middle}
+.ccap{fill:var(--ink-soft);font-size:9px;font-weight:700}.csub{fill:var(--self);font-size:10px;font-weight:700}
+.cms{font-size:9.5px;font-weight:700}.clane{fill:var(--muted);font-size:10px;font-weight:600}
+.cmetrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:6px}
+.cm{background:var(--panel-2);border:1px solid var(--hair);border-radius:9px;padding:8px 11px}
+.cm span{font-size:11px;color:var(--muted);font-weight:600}.cm b{display:block;font-size:17px;margin:1px 0}.cm small{font-size:10.5px;color:var(--faint)}
+.clegend{display:flex;flex-wrap:wrap;gap:13px;margin-top:9px;font-size:11px;color:var(--muted)}
+.clegend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:middle}
 .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:720px){.cols{grid-template-columns:1fr}}
 .foot{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
@@ -370,6 +437,7 @@ ${top5Panel}
 <div class="cols">${overseasPanel}${wikiPanel}</div>
 ${catalogPanel}
 ${demoPanel}
+${careerPanel}
 
 <div class="foot">
   <b>データソースと限界</b>（best-effort・取得できた分のみ／数値は捏造なし）
