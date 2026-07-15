@@ -49,6 +49,20 @@ for (const a of artists) {
   const jpv = (os.find(o => o.country === 'JP') || {}).streams || 0;
   const tot = os.reduce((s, o) => s + o.streams, 0);
   a.overseasPct = tot ? (1 - jpv / tot) * 100 : null;
+  // キャリア指標（リリース＋ライブ履歴 eventernote）
+  const pd = s => { if (!s) return null; const t = String(s); let m; if ((m = t.match(/^(\d{4})(\d{2})(\d{2})/))) return new Date(+m[1], +m[2] - 1, +m[3]).getTime(); if (t.includes('-')) { const x = new Date(t.slice(0, 10)); return isFinite(x) ? x.getTime() : null; } return null; };
+  const catC = a.d.sources?.qlono?.catalog || a.d.sources?.gfk?.catalog || [];
+  const relTs = catC.map(c => pd(c.released || c.release)).filter(Boolean);
+  const live = a.d.sources?.live;
+  const evs = (live?.events || []).map(e => ({ ...e, t: pd(e.date) })).filter(e => e.t);
+  a.debut = Math.min(...(relTs.length ? relTs : [Infinity]), ...(evs.length ? evs.map(e => e.t) : [Infinity]));
+  if (!isFinite(a.debut)) a.debut = null;
+  a.activeYears = a.debut ? (Date.now() - a.debut) / (365.25 * 864e5) : null;
+  a.liveCount = live?.summary?.total || 0;
+  a.liveByType = live?.summary?.byType || {};
+  const oneman = evs.filter(e => e.type === '単独' || e.type === 'ツアー').sort((x, y) => x.t - y.t);
+  a.firstOneman = oneman[0] || null;
+  a.biggestVenue = evs.filter(e => e.capacity).sort((x, y) => y.capacity - x.capacity)[0] || null;
   a.overseas = os;
   a.demo = a.d.sources?.qlono?.demographics;
   const catTie = (a.d.sources?.qlono?.catalog || []).flatMap(x => x.tieups || []);
@@ -147,6 +161,23 @@ if (self?.overseas?.length || (Array.isArray(self?.demo) && self.demo.length)) {
 const adviceHtml = advice.length ? `<section class="panel advice"><div class="panel-h"><h2>アドバイス（データ根拠つき）</h2><span class="src">${esc(self?.name || '')}向け・要検証のたたき台</span></div>
   <ol class="adv">${advice.map(a => typeof a === 'string' ? `<li>${esc(a)}</li>` : `<li><b>${esc(a.h)}</b><div>${esc(a.body)}</div></li>`).join('')}</ol></section>` : '';
 
+// ---------- ⑤ キャリア到達比較（デビュー起点の到達スピード） ----------
+const yfmt = ms => new Date(ms).toISOString().slice(0, 7);
+const careerRows = artists.map(a => {
+  const venue = a.biggestVenue ? (a.biggestVenue.capacity >= 10000 ? (a.biggestVenue.capacity / 1e4).toFixed(1).replace(/\.0$/, '') + '万' : comma(a.biggestVenue.capacity)) : '<span class="faint">未照合</span>';
+  const bt = Object.entries(a.liveByType).map(([k, v]) => k.replace('/その他', '').slice(0, 3) + v).join(' ');
+  return `<tr class="${a.self ? 'me' : ''}"><td class="song"><span class="dot" style="background:${a.col}"></span>${esc(a.name)}${a.self ? ' ★' : ''}</td>
+    <td class="r">${a.debut ? yfmt(a.debut) : '<span class="faint">—</span>'}</td>
+    <td class="r">${a.activeYears ? a.activeYears.toFixed(1) + '年' : '—'}</td>
+    <td class="r">${a.liveCount || '<span class="faint">0</span>'}<span class="u2"> ${esc(bt)}</span></td>
+    <td class="r">${a.firstOneman ? yfmt(a.firstOneman.t) : '<span class="faint">DB未</span>'}</td>
+    <td class="r">${venue}${a.biggestVenue ? `<span class="u2"> ${esc((a.biggestVenue.venue || '').slice(0, 10))}</span>` : ''}</td>
+    <td class="r num">${jp(a.latestMonth || a.latest)}</td></tr>`;
+}).join('');
+const careerCompare = `<section class="panel"><div class="panel-h"><h2>⑤ キャリア到達比較</h2><span class="src">デビュー/活動年数/ライブ/初単独/最大会場/現在規模</span></div>
+  <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>アーティスト</th><th class="r">デビュー</th><th class="r">活動年数</th><th class="r">ライブ(種別)</th><th class="r">初単独/ツアー</th><th class="r">最大会場(既知)</th><th class="r">現在(月間)</th></tr></thead><tbody>${careerRows}</tbody></table></div>
+  <p class="note-inline">デビュー＝主要リリース/初ライブの最早。ライブ・会場キャパは公演DB(eventernote)＋venues.json（フェス網羅◎／ワンマン漏れ・未照合あり）。海外勢は公演DB薄。現在＝GfK直近月。各社の個別レポートに詳細な年表あり。best-effort・要検証。</p></section>`;
+
 const html = `<title>${esc(title)}</title>
 <style>
 :root{--surface:#f7f9fb;--panel:#fff;--panel-2:#fbfcfd;--ink:#131820;--ink-soft:#3a4250;--muted:#5c6470;--faint:#8a929e;--line:#e4e8ee;--hair:#eef1f5;--self:#2a78d6;--self-soft:rgba(42,120,214,.12);--rival:#eb6834;--rival-soft:rgba(235,104,52,.12);--good:#0ca30c;--warn:#d98a1f;--crit:#d03b3b;--shadow:0 1px 2px rgba(16,24,40,.04),0 6px 20px rgba(16,24,40,.05);--font:system-ui,-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",Meiryo,sans-serif}
@@ -216,6 +247,7 @@ ${self ? `<p class="lead">${esc(self.name)}の最新週 <b>${jp(self.latest)}</b
 <section class="panel"><div class="panel-h"><h2>④ お茶の間・関心の瞬間最大（Wikipedia ja 日次PVピーク）</h2><span class="src">関心指標・再生数ではない</span></div>
   <div class="bars">${wikiBars}</div></section>
 
+${careerCompare}
 ${selfPanel}
 ${adviceHtml}
 
