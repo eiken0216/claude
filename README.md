@@ -1,3 +1,22 @@
+# アナリティクス レポート集
+
+Claude Code のスキルとして実装したアナリティクスツール集です。
+
+| スキル | 用途 |
+|---|---|
+| `/tiktok-report <handle>` | TikTok アカウントの動画指標・コメントのレポート |
+| `/artist-analytics <artist> [, 興行も含めて]` | アーティスト分析(ストリーミング/SNS/リリース + 興行分析) |
+
+## /artist-analytics
+
+アーティストの公開データ(Spotify・YouTube・公式サイト・音楽メディア)を収集し、
+`reports/artist/<アーティスト名>/` にレポート(Markdown)とデータ(CSV)を書き出します。
+「興行も含めて」と指定すると、ツアー日程・会場キャパ・チケット価格・フェス出演・
+概算グロスなどのライブビジネス分析が加わります。実行のたびに
+`metrics_history.csv` に数値が追記され、前回比の推移も追えます。
+
+詳細は `.claude/skills/artist-analytics/SKILL.md` を参照。
+
 # TikTok アナリティクス レポート
 
 特定の TikTok アカウントを定期的にチェックし、動画ごとの指標（再生数・いいね・
