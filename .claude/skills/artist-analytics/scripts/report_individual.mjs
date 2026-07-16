@@ -265,56 +265,61 @@ const live = d.sources?.live;
 let careerPanel = '';
 {
   const pd = s => { if (!s) return null; const t = String(s); let m; if ((m = t.match(/^(\d{4})(\d{2})(\d{2})/))) return new Date(+m[1], +m[2] - 1, +m[3]).getTime(); if (t.includes('-')) { const x = new Date(t.slice(0, 10)); return isFinite(x) ? x.getTime() : null; } return null; };
-  const rels = cat.map(c => ({ t: pd(c.rel), title: c.title, tie: (tieups[c.title]?.label) || ((c.tie || [])[0] ? ((c.tie[0].genre || '') + (c.tie[0].title ? '：' + c.tie[0].title : '')) : '') })).filter(r => r.t).sort((a, b) => a.t - b.t);
-  const evs = (live?.events || []).map(e => ({ ...e, t: pd(e.date) })).filter(e => e.t).sort((a, b) => a.t - b.t);
-  const monthly = (gfk?.monthly || []).map(m => ({ t: pd(m.month + '-01'), v: m.artistTotal })).filter(m => m.t);
-  const allT = [...rels.map(r => r.t), ...evs.map(e => e.t)];
-  if (allT.length >= 2 || (allT.length && monthly.length)) {
-    const NOW = Date.now();
-    const t0 = Math.min(...allT, ...monthly.map(m => m.t)), t1 = Math.max(...allT, ...monthly.map(m => m.t), NOW);
-    const debut = Math.min(...(rels.length ? [rels[0].t] : []), ...(evs.length ? [evs[0].t] : []));
-    const oneman = evs.filter(e => e.type === '単独' || e.type === 'ツアー');
-    const firstOneman = oneman[0] || null;
-    const capped = evs.filter(e => e.capacity).slice().sort((a, b) => b.capacity - a.capacity);
-    const biggest = capped[0] || null;
-    const years = ((t1 - t0) / (365.25 * 864e5));
-    const yfmt = ms => new Date(ms).toISOString().slice(0, 7);
-    // --- SVG ---
-    const W = 900, H = 220, padL = 66, padR = 12;
-    const X = t => padL + (t - t0) / ((t1 - t0) || 1) * (W - padL - padR);
-    const yRel = 40, yLive = 108, ySub = 186, subH = 50;
-    const y0 = new Date(t0).getFullYear(), y1 = new Date(t1).getFullYear(), span = y1 - y0;
-    const yrTicks = []; for (let y = Math.ceil(y0); y <= y1; y++) if (span <= 9 || y % 2 === 0) yrTicks.push(y);
-    const grid = yrTicks.map(y => { const xx = X(new Date(y, 0, 1).getTime()); return `<line x1="${xx}" y1="18" x2="${xx}" y2="${H - 16}" class="cgrid"/><text x="${xx}" y="${H - 3}" class="cyr">${y}</text>`; }).join('');
-    const relTicks = rels.map(r => { const xx = X(r.t), tie = !!r.tie; return `<line x1="${xx.toFixed(1)}" y1="${yRel - (tie ? 15 : 9)}" x2="${xx.toFixed(1)}" y2="${yRel}" stroke="${tie ? 'var(--self)' : 'var(--faint)'}" stroke-width="${tie ? 2.2 : 1.3}"/>${tie ? `<circle cx="${xx.toFixed(1)}" cy="${yRel - 15}" r="2.2" fill="var(--self)"/>` : ''}`; }).join('');
-    const tCol = t => t === '単独' ? 'var(--crit)' : t === 'ツアー' ? 'var(--self)' : t === 'フェス' ? 'var(--warn)' : 'var(--faint)';
-    const liveDots = evs.map(e => { const xx = X(e.t), big = e.type === '単独' || e.type === 'ツアー'; return `<circle cx="${xx.toFixed(1)}" cy="${yLive}" r="${big ? 3.6 : 2.4}" fill="${tCol(e.type)}" opacity="${big ? 0.95 : 0.5}"/>`; }).join('');
-    const capLab = capped.slice(0, 5).map(e => `<text x="${X(e.t).toFixed(1)}" y="${yLive - 9}" class="ccap" text-anchor="middle">${e.capacity >= 10000 ? (e.capacity / 1e4).toFixed(1).replace(/\.0$/, '') + '万' : (e.capacity / 1000).toFixed(1).replace(/\.0$/, '') + 'k'}</text>`).join('');
-    let subPath = '';
-    if (monthly.length >= 2) { const mx = Math.max(...monthly.map(m => m.v)) || 1; const sy = v => ySub - (v / mx) * subH; const pts = monthly.map(m => `${X(m.t).toFixed(1)},${sy(m.v).toFixed(1)}`); subPath = `<path d="M${X(monthly[0].t).toFixed(1)},${ySub} L${pts.join(' L')} L${X(monthly[monthly.length - 1].t).toFixed(1)},${ySub} Z" fill="var(--self-soft)"/><path d="M${pts.join(' L')}" fill="none" stroke="var(--self)" stroke-width="1.6"/><text x="${X(monthly[monthly.length - 1].t).toFixed(1)}" y="${ySub - (monthly[monthly.length - 1].v / mx) * subH - 4}" class="csub" text-anchor="end">${jp(monthly[monthly.length - 1].v)}/月</text>`; }
-    const mline = (t, lab, col) => (t && isFinite(t)) ? `<line x1="${X(t).toFixed(1)}" y1="16" x2="${X(t).toFixed(1)}" y2="${H - 16}" stroke="${col}" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.75"/><text x="${X(t).toFixed(1) - 0 + 3}" y="26" class="cms" fill="${col}">${esc(lab)}</text>` : '';
-    const msLines = mline(debut, 'デビュー', 'var(--good)') + (firstOneman && firstOneman.t !== debut ? mline(firstOneman.t, '初' + (firstOneman.type === 'ツアー' ? 'ツアー' : '単独'), 'var(--crit)') : '');
-    const laneLab = `<text x="4" y="${yRel + 3}" class="clane">リリース</text><text x="4" y="${yLive + 3}" class="clane">ライブ</text><text x="4" y="${ySub - subH / 2}" class="clane">サブスク<tspan x="4" dy="12">(直近3年)</tspan></text>`;
-    const svg = `<svg viewBox="0 0 ${W} ${H}" class="ctl" role="img" aria-label="キャリア変遷年表">${grid}${msLines}${relTicks}${liveDots}${capLab}${subPath}${laneLab}</svg>`;
-    // --- metrics ---
-    const relFreq = rels.length >= 2 ? (years * 12 / rels.length) : null; // 主要リリースの平均間隔(月)
-    const bt = live?.summary?.byType || {};
+  const fmtD = ms => ms ? new Date(ms).toISOString().slice(0, 10) : '—';
+  const capFmt = c => c == null ? '<span class="faint">未照合</span>' : (c >= 10000 ? (c / 1e4).toFixed(1).replace(/\.0$/, '') + '万' : comma(c));
+  const rels = cat.map(c => ({ t: pd(c.rel), title: c.title, peak: c.peak, unit: c.peakUnit, tie: (tieups[c.title]?.label) || ((c.tie || [])[0] ? ((c.tie[0].genre || '') + (c.tie[0].title ? '：' + c.tie[0].title : '')) : '') })).filter(r => r.t).sort((a, b) => b.t - a.t);
+  const evs = (live?.events || []).map(e => ({ ...e, t: pd(e.date) })).filter(e => e.t).sort((a, b) => b.t - a.t);
+  const bt = live?.summary?.byType || {};
+  const nonFes = evs.filter(e => e.type !== 'フェス' && e.type !== 'イベント'); // 全公演（フェス・物販イベント除く）→ 履歴テーブル
+  const own = evs.filter(e => e.type === '単独' || e.type === 'ツアー');        // 自主公演＝ヘッドライン近似 → キャパ指標/推移
+  const cappedOT = own.filter(e => e.capacity).slice().sort((a, b) => a.t - b.t);
+  const biggest = own.filter(e => e.capacity).sort((a, b) => b.capacity - a.capacity)[0] || null;
+  const clean = s => (s || '').replace(/\s*[（(【]?\s*(DAY|Day)\s*\.?\s*\d+.*$/i, '').replace(/\s*\d+日目.*$/, '').replace(/\s*[-‐]\s*\d+日目.*$/, '').trim();
+  const fesNames = [...new Set(evs.filter(e => e.type === 'フェス').map(e => clean(e.title)).filter(Boolean))];
+  const debut = Math.min(...(rels.length ? rels.map(r => r.t) : [Infinity]), ...(evs.length ? evs.map(e => e.t) : [Infinity]));
+  const years = isFinite(debut) ? (Date.now() - debut) / (365.25 * 864e5) : null;
+  if (rels.length || evs.length) {
+    const hasLive = evs.length > 0;
+    const na = '<span class="faint">未取得</span>';
+    const relFreq = rels.length >= 2 && years ? (years * 12 / rels.length) : null;
     const mrow = [
-      { s: '活動期間', b: years.toFixed(1) + '年', x: 'デビュー ' + (isFinite(debut) ? yfmt(debut) : '—') },
+      { s: '活動期間', b: years ? years.toFixed(1) + '年' : '—', x: 'デビュー ' + (isFinite(debut) ? fmtD(debut).slice(0, 7) : '—') },
       { s: '主要リリース', b: rels.length + '曲', x: relFreq ? '約' + relFreq.toFixed(1) + 'ヶ月/曲' : '' },
-      { s: 'ライブ(公演DB)', b: (live?.summary?.total || 0) + '件', x: Object.entries(bt).map(([k, v]) => k + v).join(' ') },
-      { s: '初 単独/ツアー', b: firstOneman ? yfmt(firstOneman.t) : '<span class="faint">DB未記録</span>', x: firstOneman ? esc((firstOneman.venue || '').slice(0, 14)) : '' },
-      { s: '最大会場(既知キャパ)', b: biggest ? (biggest.capacity >= 10000 ? (biggest.capacity / 1e4).toFixed(1).replace(/\.0$/, '') + '万' : comma(biggest.capacity)) : '<span class="faint">未照合</span>', x: biggest ? esc((biggest.venue || '').slice(0, 14)) : '' },
+      { s: '単発ワンマン', b: hasLive ? (bt['単独'] || 0) + '件' : na, x: '' },
+      { s: 'ツアー公演', b: hasLive ? (bt['ツアー'] || 0) + '件' : na, x: '' },
+      { s: 'フェス出演', b: hasLive ? (bt['フェス'] || 0) + '件' : na, x: hasLive ? fesNames.length + '種' : '' },
+      { s: '最大会場(自主公演)', b: hasLive ? (biggest ? capFmt(biggest.capacity) : '<span class="faint">未照合</span>') : na, x: biggest ? esc((biggest.venue || '').slice(0, 14)) : '' },
     ];
-    const av2 = av.live || '未取得';
-    careerPanel = `<section class="panel"><div class="panel-h"><h2>キャリア変遷（年表）</h2><span class="src">リリース×ライブ会場キャパ×サブスク・${av.live === 'ok' ? '公演DB=eventernote' : esc(String(av2).slice(0, 24))}</span></div>
+    // 会場キャパ推移（単独/ツアーのキャパ判明分・対数）
+    let capChart = '';
+    if (cappedOT.length >= 2) {
+      const W = 880, H = 156, padL = 46, padR = 90, padT = 16, padB = 22;
+      const t0 = cappedOT[0].t, t1 = cappedOT[cappedOT.length - 1].t;
+      const X = t => padL + (t - t0) / ((t1 - t0) || 1) * (W - padL - padR);
+      const caps = cappedOT.map(e => e.capacity), maxC = Math.max(...caps), minC = Math.min(...caps);
+      const lg = v => Math.log10(Math.max(100, v)), Y = v => H - padB - (lg(v) - lg(minC)) / ((lg(maxC) - lg(minC)) || 1) * (H - padT - padB);
+      const y0 = new Date(t0).getFullYear(), y1 = new Date(t1).getFullYear();
+      const grid = []; for (let y = y0; y <= y1; y++) if ((y1 - y0) <= 9 || y % 2 === 0) { const xx = X(new Date(y, 0, 1).getTime()); if (xx >= padL && xx <= W - padR) grid.push(`<line x1="${xx}" y1="${padT}" x2="${xx}" y2="${H - padB}" class="cgrid"/><text x="${xx}" y="${H - 4}" class="cyr">${y}</text>`); }
+      const line = cappedOT.map((e, i) => `${i ? 'L' : 'M'}${X(e.t).toFixed(1)},${Y(e.capacity).toFixed(1)}`).join(' ');
+      const dots = cappedOT.map(e => `<circle cx="${X(e.t).toFixed(1)}" cy="${Y(e.capacity).toFixed(1)}" r="3" fill="${e.type === 'ツアー' ? 'var(--self)' : 'var(--crit)'}"/>`).join('');
+      const labeled = cappedOT.slice().sort((a, b) => b.capacity - a.capacity).slice(0, 4);
+      const labs = labeled.map(e => `<text x="${X(e.t).toFixed(1)}" y="${Y(e.capacity).toFixed(1) - 6}" class="ccap" text-anchor="middle">${capFmt(e.capacity)}</text>`).join('');
+      const last = cappedOT[cappedOT.length - 1];
+      capChart = `<div class="sub-h">会場キャパ推移（自主公演・対数軸）</div><svg viewBox="0 0 ${W} ${H}" class="ctl">${grid.join('')}<path d="${line}" fill="none" stroke="var(--faint)" stroke-width="1.4"/>${dots}${labs}<text x="${X(last.t) + 6}" y="${Y(last.capacity) + 3}" class="csub">直近 ${capFmt(last.capacity)}</text></svg>`;
+    } else capChart = `<div class="empty" style="margin-top:6px;text-align:left">自主公演（単独/ツアー）のキャパ照合が2件未満（公演DBにワンマン記録が少ない or venues.json未登録）。下の公演履歴で会場名を確認。</div>`;
+    const relTable = rels.length ? `<div class="sub-h">リリース履歴（主要曲・最高ST）</div><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>曲</th><th>配信日</th><th class="r">最高ST</th><th>タイアップ</th></tr></thead><tbody>${rels.slice(0, 15).map(r => `<tr><td class="song">${esc(r.title)}</td><td class="dt">${fmtD(r.t)}</td><td class="r num">${r.peak ? jp(r.peak) + '<span class="u">' + (r.unit || '') + '</span>' : '<span class="faint">—</span>'}</td><td class="tie">${r.tie ? `<span class="chip">${esc(r.tie)}</span>` : '<span class="faint">—</span>'}</td></tr>`).join('')}</tbody></table></div>` : '';
+    const tb = t => t === 'ツアー' ? '<span class="tbadge tour">ツアー</span>' : t === '単独' ? '<span class="tbadge oneman">単発</span>' : t === 'イベント' ? '<span class="tbadge ev">イベント</span>' : '<span class="tbadge dav">公演</span>';
+    const otTable = nonFes.length ? `<div class="sub-h">公演履歴（フェス除く・${nonFes.length}件）</div><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>日付</th><th>種別</th><th>会場</th><th class="r">キャパ</th><th>公演名</th></tr></thead><tbody>${nonFes.slice(0, 24).map(e => `<tr><td class="dt">${fmtD(e.t)}</td><td>${tb(e.type)}</td><td>${esc((e.venue || '—').slice(0, 20))}</td><td class="r">${capFmt(e.capacity)}</td><td style="font-size:12px;color:var(--muted)">${esc((e.title || '').slice(0, 40))}</td></tr>`).join('')}</tbody></table></div>${nonFes.length > 24 ? `<p class="note-inline">ほか${nonFes.length - 24}件</p>` : ''}` : `<div class="empty" style="margin-top:6px;text-align:left">公演DBに単独/ツアー/対バンの記録なし。</div>`;
+    const fesBlock = fesNames.length ? `<div class="sub-h">フェス出演（${fesNames.length}種）</div><div class="feschips">${fesNames.slice(0, 30).map(n => `<span class="feschip">${esc(n.slice(0, 34))}</span>`).join('')}</div>` : '';
+    const liveSrc = av.live === 'ok' ? '公演DB=eventernote' : 'リリース=カタログ（ライブDB未照合）';
+    const noLiveNote = hasLive ? '' : `<div class="empty" style="margin-top:6px;text-align:left">ライブ履歴は公演DB(eventernote)で該当アクターを一意特定できず未取得（新人・海外勢・別名義など）。上記はリリース実績のみ。</div>`;
+    careerPanel = `<section class="panel"><div class="panel-h"><h2>キャリア変遷</h2><span class="src">${liveSrc}</span></div>
       <div class="cmetrics">${mrow.map(m => `<div class="cm"><span>${m.s}</span><b>${m.b}</b><small>${m.x}</small></div>`).join('')}</div>
-      ${svg}
-      <div class="clegend"><span><i style="background:var(--self)"></i>リリース(タイアップ付=●)</span><span><i style="background:var(--crit)"></i>単独</span><span><i style="background:var(--self)"></i>ツアー</span><span><i style="background:var(--warn)"></i>フェス</span><span><i style="background:var(--faint)"></i>対バン/イベント</span></div>
-      <p class="note-inline">ライブ履歴は公演DB(eventernote)で、フェス網羅は強いが単独公演(ワンマン)は漏れることがある。会場キャパはvenues.json照合分のみ（未登録は「未照合」）。サブスクはGfK直近3年のみ（それ以前は非対応）。best-effort・要検証。</p></section>`;
+      ${hasLive ? `${capChart}${relTable}${otTable}${fesBlock}` : `${relTable}${noLiveNote}`}
+      <p class="note-inline">ライブは公演DB(eventernote)＋venues.jsonキャパ照合。<b>単発</b>=単独公演／<b>ツアー</b>=ツアー・巡回公演／<b>公演</b>=種別未確定（対バン・共演・showcase・チャリティ等）。<b>最大会場・キャパ推移は自主公演(単独/ツアー)のみ</b>を対象（多アーティスト共演/showcaseの会場は下の履歴には残すが指標からは除外＝ヘッドライン規模の近似）。公演DBは出演記録全般を含み網羅・分類とも best-effort・要検証。最高ST=SMEはデイリー・非SMEは週次の期間最高。</p></section>`;
   } else {
-    careerPanel = `<section class="panel"><div class="panel-h"><h2>キャリア変遷（年表）</h2><span class="src">${esc(String(av.live || 'ライブ履歴未取得').slice(0, 40))}</span></div>
-      <div class="empty">リリース／ライブ履歴が不足のため年表化不可（新人・海外勢・公演DB未収録など）。取得できたリリース／サブスクは上部パネル参照。</div></section>`;
+    careerPanel = `<section class="panel"><div class="panel-h"><h2>キャリア変遷</h2><span class="src">${esc(String(av.live || 'ライブ履歴未取得').slice(0, 40))}</span></div>
+      <div class="empty">リリース／ライブ履歴が不足のため年表化不可（新人・海外勢・公演DB未収録など）。</div></section>`;
   }
 }
 
@@ -407,6 +412,11 @@ h1{font-size:30px;margin:4px 0 8px;letter-spacing:-.01em}
 .cm span{font-size:11px;color:var(--muted);font-weight:600}.cm b{display:block;font-size:17px;margin:1px 0}.cm small{font-size:10.5px;color:var(--faint)}
 .clegend{display:flex;flex-wrap:wrap;gap:13px;margin-top:9px;font-size:11px;color:var(--muted)}
 .clegend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.tbadge{font-size:10px;font-weight:700;padding:1px 6px;border-radius:5px;white-space:nowrap}
+.tbadge.oneman{background:rgba(208,59,59,.12);color:var(--crit)}.tbadge.tour{background:var(--self-soft);color:var(--self)}
+.tbadge.ev{background:rgba(217,138,31,.14);color:var(--warn)}.tbadge.dav{background:var(--hair);color:var(--muted)}
+.feschips{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}
+.feschip{font-size:11px;background:rgba(217,138,31,.12);color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 25%,var(--hair));border-radius:6px;padding:2px 8px}
 .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:720px){.cols{grid-template-columns:1fr}}
 .foot{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}

@@ -41,11 +41,27 @@ function capacityOf(venue) {
   for (const v of VENUES) if (venue.includes(v.match)) return { cap: v.cap, fes: !!v.fes, matched: v.match };
   return { cap: null, fes: false, matched: null };
 }
-function classify(title) {
-  if (/ワンマン|ONE ?MAN|単独|自主企画|主催/i.test(title)) return '単独';
-  if (/FES|フェス|FESTIVAL|SONIC|ROCK IN|VIVA LA|COUNT ?DOWN|JAM|METROPOLITAN|WHEEL|BUNCH/i.test(title)) return 'フェス';
-  if (/TOUR|ツアー/i.test(title)) return 'ツアー';
-  if (/上映|先行上映|イベント|リリイベ|お渡し会/i.test(title)) return 'イベント';
+function decodeEntities(s) {
+  return String(s || '').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&#0?34;/g, '"')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&');
+}
+const normName = s => (s || '').replace(/[\s　]/g, '').toLowerCase();
+function classify(title, artistName) {
+  const t = title || '';
+  // フェス最優先（フェス内の企画をワンマン等に誤判定しない）
+  if (/フェス|フェスティバル|FES\b|FESTIVAL|SONIC|ROCK ?IN ?JAPAN|VIVA ?LA|COUNT ?DOWN|JAPAN ?JAM|SWEET ?LOVE ?SHOWER|RISING ?SUN|FUJI ?ROCK|MONSTER ?ba|RADIO ?CRAZY|METROCK|ARABAKI|GREENROOM|SONICMANIA|LuckyFes|ラブシャ|イナズマ|WILD ?BUNCH|OTODAMA|京都大作戦|ap ?bank|バズリズム|歌合戦|METROPOLITAN|WHEEL|BUNCH|JAPAN ?JAM|JOIN ?ALIVE|OGA ?NAMAHAGE|氣志團万博|ジャイガ|GIGA/i.test(t)) return 'フェス';
+  if (/TOUR|ツアー|LIVE ?TOUR|ARENA ?TOUR|HALL ?TOUR|全国ツアー/i.test(t)) return 'ツアー';
+  if (/ワンマン|ONE ?MAN|単独|自主企画|主催|プレミアム?ライブ|スペシャルライブ|生誕|凱旋|単発/i.test(t)) return '単独';
+  // タイトルに「自アーティスト名＋公演形態語」＝ヘッドライン公演の強い signal。
+  //   多アーティスト共演/showcase/チャリティ（to HEROes / D.U.N.K / 24時間TV 等）はイベント名主体で自名を含まない→除外できる。
+  const an = normName(artistName);
+  if (an && an.length >= 2 && normName(t).includes(an) && /LIVE|CONCERT|公演|ARENA|DOME|HALL|アリーナ|ドーム|ホール|武道館|スタジアム|STADIUM|体育館|WORLD|JAPAN/i.test(t)) {
+    return /TOUR|ツアー|巡回|全国/i.test(t) ? 'ツアー' : '単独';
+  }
+  if (/上映|先行上映|リリイベ|お渡し|トークショー|公開収録|フリーライブ|インストア|イベント/i.test(t)) return 'イベント';
+  // アーティスト自主の巡回公演＝「都市名＋公演」は強い単独ツアー signal（フェスは上で除外済み）。
+  //   ※ 単なる「N日目/DAY N」は多アーティストの showcase・チャリティにも付くため採用しない（誤爆防止）。
+  if (/(?:東京|大阪|名古屋|愛知|福岡|札幌|仙台|広島|神奈川|横浜|埼玉|千葉|幕張|京都|兵庫|神戸|石川|金沢|山形|宮城|新潟|静岡|岡山|熊本|沖縄|北海道|長野|群馬|栃木|茨城|北九州|高松|松山|那覇)公演/.test(t)) return 'ツアー';
   return '対バン/その他';
 }
 
@@ -65,9 +81,9 @@ export async function liveHistory(name, { actorId } = {}) {
   for (const b of blocks) {
     const d = b.match(/day0">(\d{4}-\d{2}-\d{2})/);
     if (!d) continue;
-    const t = (b.match(/\/events\/\d+">([^<]+)<\/a>/) || [, ''])[1].replace(/&#39;/g, "'").trim();
-    const v = (b.match(/\/places\/\d+">([^<]+)<\/a>/) || [, ''])[1].trim();
-    const type = classify(t);
+    const t = decodeEntities((b.match(/\/events\/\d+">([^<]+)<\/a>/) || [, ''])[1]).trim();
+    const v = decodeEntities((b.match(/\/places\/\d+">([^<]+)<\/a>/) || [, ''])[1]).trim();
+    const type = classify(t, actor.name || name);
     const cap = capacityOf(v);
     // キャパ到達分析の対象は単独/ツアーのみ。フェス/イベントはキャパ非対象。
     const isFes = type === 'フェス' || cap.fes;

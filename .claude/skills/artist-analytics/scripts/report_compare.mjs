@@ -62,7 +62,8 @@ for (const a of artists) {
   a.liveByType = live?.summary?.byType || {};
   const oneman = evs.filter(e => e.type === '単独' || e.type === 'ツアー').sort((x, y) => x.t - y.t);
   a.firstOneman = oneman[0] || null;
-  a.biggestVenue = evs.filter(e => e.capacity).sort((x, y) => y.capacity - x.capacity)[0] || null;
+  // 最大会場は自主公演(単独/ツアー)のみ＝ヘッドライン規模の近似（多アーティスト共演/showcase/チャリティは除外）。個別レポートと整合。
+  a.biggestVenue = oneman.filter(e => e.capacity).sort((x, y) => y.capacity - x.capacity)[0] || null;
   a.overseas = os;
   a.demo = a.d.sources?.qlono?.demographics;
   const catTie = (a.d.sources?.qlono?.catalog || []).flatMap(x => x.tieups || []);
@@ -175,7 +176,7 @@ const careerRows = artists.map(a => {
     <td class="r num">${jp(a.latestMonth || a.latest)}</td></tr>`;
 }).join('');
 const careerCompare = `<section class="panel"><div class="panel-h"><h2>⑤ キャリア到達比較</h2><span class="src">デビュー/活動年数/ライブ/初単独/最大会場/現在規模</span></div>
-  <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>アーティスト</th><th class="r">デビュー</th><th class="r">活動年数</th><th class="r">ライブ(種別)</th><th class="r">初単独/ツアー</th><th class="r">最大会場(既知)</th><th class="r">現在(月間)</th></tr></thead><tbody>${careerRows}</tbody></table></div>
+  <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>アーティスト</th><th class="r">デビュー</th><th class="r">活動年数</th><th class="r">ライブ(種別)</th><th class="r">初単独/ツアー</th><th class="r">最大会場(自主)</th><th class="r">現在(月間)</th></tr></thead><tbody>${careerRows}</tbody></table></div>
   <p class="note-inline">デビュー＝主要リリース/初ライブの最早。ライブ・会場キャパは公演DB(eventernote)＋venues.json（フェス網羅◎／ワンマン漏れ・未照合あり）。海外勢は公演DB薄。現在＝GfK直近月。各社の個別レポートに詳細な年表あり。best-effort・要検証。</p></section>`;
 
 const html = `<title>${esc(title)}</title>
