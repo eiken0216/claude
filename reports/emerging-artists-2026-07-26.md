@@ -108,3 +108,55 @@ laurynkov／shayneorok／julianawilsonguitar／kasenpaiph／pns.96(TH)／maypian
   （特に tomokoofficial の国籍、ハク。/ Vivanz Eden の流通形態）。
 - **母集団拡大**：TikTok は検索がログイン必須で、いまはYouTube経由と外部リストからの
   逆引きで候補を作っている。`TIKTOK_COOKIE` があれば検索から直接掘れて桁が変わる。
+
+---
+
+## C. プレイリスト
+
+### YouTube 再生リスト（22本 / 藤井風型候補の代表曲）
+
+匿名再生リスト形式。ブラウザで開くとそのまま連続再生される。
+
+```
+https://www.youtube.com/watch_videos?video_ids=NYAtIrNmYjs,YHXM05KptJo,QRpspKVE5JI,mCkRRMJqOqg,TFNWgn8FbMQ,AwlUYNyuLPM,tAQtG-tO3mE,sDqSrnwrHmA,421It1iP-6E,Wr7aYFmveM0,x8PikuPPfbs,9SaNeKh0TUw,85_GR9UWelk,MxkGHm6jcsw,dvMdBuC5i_0,jkz6z077d7c,rpZCexBd9bc,etd5Q5Yq8RI,DQhkHl2eqW8,LZVsATLj4Tw,KoZx_i_X2rE,M8-vje-bq9c
+```
+
+| # | チャンネル | 曲 | video id |
+|---|---|---|---|
+| 1 | MICCHI | 英語で うっせぇわ | NYAtIrNmYjs |
+| 2 | X-Girl（XENIA） | 風にまかせて / Japanese R&B | YHXM05KptJo |
+| 3 | Yukan | Multo（日本語カバー） | QRpspKVE5JI |
+| 4 | masa@azure | 街物語 / 山下達郎 | mCkRRMJqOqg |
+| 5 | メタル姫 | Crazy Train in the Temple | TFNWgn8FbMQ |
+| 6 | Yoshi Hana（花城よしの） | Slow and Easy / 平井大 | AwlUYNyuLPM |
+| 7 | 麦猫の館 | 小野リサ Live ボサノバ | tAQtG-tO3mE |
+| 8 | LUMiRiSE | SHOOTER MV | sDqSrnwrHmA |
+| 9 | ねことガレリア | 火星人 / ヨルシカ | 421It1iP-6E |
+| 10 | OPUS Tube | プラスティック・ラブ | Wr7aYFmveM0 |
+| 11 | 作道可奈恵 | First Love / 宇多田ヒカル | x8PikuPPfbs |
+| 12 | Rahmen 75 | 若者たち × Stand By Me | 9SaNeKh0TUw |
+| 13 | あねといもこ | 火星人 / ヨルシカ | 85_GR9UWelk |
+| 14 | ももか | pretender | MxkGHm6jcsw |
+| 15 | SATOP | 真夜中のドア（重音テト） | dvMdBuC5i_0 |
+| 16 | Tokyo Soul Cover | First Love English Ver. | jkz6z077d7c |
+| 17 | 渡辺レベッカ | 糸 English Cover | rpZCexBd9bc |
+| 18 | saewool | JANE DOE acoustic | etd5Q5Yq8RI |
+| 19 | Kisetsu | Stay With Me × Plastic Love | DQhkHl2eqW8 |
+| 20 | 六百恋歌 | Stay With Me English Cover | LZVsATLj4Tw |
+| 21 | Lauren Horii | So Will I 日本語カバー | KoZx_i_X2rE |
+| 22 | LADYBABY | ニッポン饅頭 | M8-vje-bq9c |
+
+### Spotify
+
+配信音源が確認できたのは以下。カバー中心のアカウントは音源を出していないことが多い。
+
+| アーティスト | 確認できたもの |
+|---|---|
+| ゆなんなん | アーティストページあり（自主配信） |
+| SHIN（@shzdesu） | シングル「諦めたい貴方へ」 |
+| Haku.（ハク。） | シングル「一進」ほか |
+| Keichan（けいちゃん） | アーティストページあり |
+| LUMiRiSE | 「SHOOTER」「SHOOTER - Remasterd 2024」 |
+
+音源が見つからなかった / カバー専業:
+悦音w・魔愛夢・KARIN・saewool・SAYOPOYO・mii・蓮音まゆ・MICCHI・masa@azure・作道可奈恵・Rahmen 75・あねといもこ
