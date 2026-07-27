@@ -1,0 +1,94 @@
+{
+ "Vivanz Eden": {
+  "portrait": {
+   "path": "images/vivanz_sp.jpg",
+   "w": 640,
+   "h": 640
+  },
+  "refs": {
+   "0": {
+    "path": "images/vivanzeden_jp_ref0.jpg",
+    "w": 640,
+    "h": 360
+   },
+   "1": {
+    "path": "images/vivanzeden_jp_ref1.jpg",
+    "w": 360,
+    "h": 640
+   },
+   "2": {
+    "path": "images/vivanzeden_jp_ref2.jpg",
+    "w": 360,
+    "h": 640
+   },
+   "3": {
+    "path": "images/vivanzeden_jp_ref3.jpg",
+    "w": 640,
+    "h": 360
+   }
+  },
+  "vocalist": {
+   "path": "images/vivanz_alt1.jpg",
+   "w": 540,
+   "h": 960
+  }
+ },
+ "Ryudai": {
+  "portrait": {
+   "path": "images/ryudai_a_portrait.jpg",
+   "w": 1000,
+   "h": 1000
+  },
+  "refs": {
+   "0": {
+    "path": "images/ryudai_a_ref0.jpg",
+    "w": 480,
+    "h": 640
+   },
+   "1": {
+    "path": "images/ryudai_a_ref1.jpg",
+    "w": 360,
+    "h": 640
+   },
+   "2": {
+    "path": "images/ryudai_a_ref2.jpg",
+    "w": 360,
+    "h": 640
+   },
+   "3": {
+    "path": "images/ryudai_a_ref3.jpg",
+    "w": 360,
+    "h": 640
+   }
+  }
+ },
+ "yuuna": {
+  "portrait": {
+   "path": "images/yuuna_alt2.jpg",
+   "w": 540,
+   "h": 720
+  },
+  "refs": {
+   "0": {
+    "path": "images/likekyuuna_s_ref0.jpg",
+    "w": 480,
+    "h": 640
+   },
+   "1": {
+    "path": "images/likekyuuna_s_ref1.jpg",
+    "w": 480,
+    "h": 640
+   },
+   "2": {
+    "path": "images/likekyuuna_s_ref2.jpg",
+    "w": 360,
+    "h": 640
+   },
+   "3": {
+    "path": "images/likekyuuna_s_ref3.jpg",
+    "w": 360,
+    "h": 640
+   }
+  }
+ }
+}

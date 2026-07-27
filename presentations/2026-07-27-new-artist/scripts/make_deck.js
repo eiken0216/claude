@@ -1,6 +1,10 @@
 // Google スライド用 .pptx を生成（Drive アップロード時に Google Slides へ変換）
 const PptxGenJS = require("pptxgenjs");
 const { MEETING, ARTISTS, PENDING, SUMMARY_ROWS, CLOSING } = require("./data.js");
+const IMG = require("fs").existsSync("./image_manifest.json")
+  ? JSON.parse(require("fs").readFileSync("./image_manifest.json", "utf8")) : {};
+const pic = (name, key) => (IMG[name] || {})[key] || null;
+const refPic = (name, i) => (((IMG[name] || {}).refs) || {})[String(i)] || null;
 
 // ── パレット ────────────────────────────────────────────────────────────────
 const DARK = "171226";      // 主背景（濃）
@@ -148,7 +152,7 @@ pres.subject = MEETING.org + " " + MEETING.subtitle;
   s.addText(MEETING.title, {
     x: M, y: 1.78, w: 9.6, h: 1.5, fontSize: 46, bold: true, color: LIGHT, fontFace: "Arial", margin: 0, lineSpacingMultiple: 1.05,
   });
-  s.addText("最近見つけた新人アーティスト 4組　—　いずれもレーベル未所属、契約が狙える段階です。", {
+  s.addText("最近見つけた新人アーティスト 3組　—　いずれもレーベル未所属、契約が狙える段階です。", {
     x: M, y: 3.32, w: 9.8, h: 0.5, fontSize: 15, color: MUTE_D, fontFace: "Arial", margin: 0,
   });
 
@@ -165,20 +169,26 @@ pres.subject = MEETING.org + " " + MEETING.subtitle;
   });
 
   ARTISTS.forEach((a, i) => {
-    const y = 1.9 + i * 0.72;
-    s.addShape("roundRect", { x: 10.35, y, w: 2.35, h: 0.58, rectRadius: 0.1, fill: { color: CARD_D }, line: { type: "none" } });
-    s.addShape("ellipse", { x: 10.5, y: y + 0.17, w: 0.24, h: 0.24, fill: { color: a.accent }, line: { type: "none" } });
-    s.addText(a.name, { x: 10.82, y, w: 1.8, h: 0.58, fontSize: 11.5, bold: true, color: LIGHT, fontFace: "Arial", margin: 0, valign: "middle" });
+    const y = 1.9 + i * 0.86;
+    s.addShape("roundRect", { x: 10.05, y, w: 2.65, h: 0.72, rectRadius: 0.12, fill: { color: CARD_D }, line: { type: "none" } });
+    const p = pic(a.name, "portrait");
+    if (p) {
+      s.addImage({ path: p.path, x: 10.19, y: y + 0.09, w: 0.54, h: 0.54, rounding: true,
+                   sizing: { type: "cover", w: 0.54, h: 0.54 } });
+    } else {
+      s.addShape("ellipse", { x: 10.19, y: y + 0.09, w: 0.54, h: 0.54, fill: { color: a.accent }, line: { type: "none" } });
+    }
+    s.addText(a.name, { x: 10.85, y, w: 1.72, h: 0.72, fontSize: 11.5, bold: true, color: LIGHT, fontFace: "Arial", margin: 0, valign: "middle" });
   });
 
-  shortNote(s, `${MEETING.date} 新人プレゼン。部門 ${MEETING.division}／発表者 ${MEETING.presenter}。全4組、1組5分。数値は ${MEETING.asOf} 時点で TikTok / YouTube / Spotify から実地取得。4組すべてレーベル未所属。`);
+  shortNote(s, `${MEETING.date} 新人プレゼン。部門 ${MEETING.division}／発表者 ${MEETING.presenter}。全3組、1組5分。数値は ${MEETING.asOf} 時点で TikTok / YouTube / Spotify から実地取得。3組すべてレーベル未所属。`);
 }
 
 // ═══ 2. サマリー ═══════════════════════════════════════════════════════════
 {
   const s = pres.addSlide();
   s.background = { color: LIGHT };
-  slideTitle(s, "SUMMARY", "4組の位置づけ — 詰まっている場所が全部違う");
+  slideTitle(s, "SUMMARY", "3組の位置づけ — 詰まっている場所が全部違う");
 
   grid(s, {
     x: M, y: 1.6, w: CW, rowH: 0.52,
@@ -190,17 +200,24 @@ pres.subject = MEETING.org + " " + MEETING.subtitle;
   });
 
   s.addText("一言で言うと", { x: M, y: 4.42, w: CW, h: 0.3, fontSize: 13, bold: true, color: INK, fontFace: "Arial", margin: 0 });
+  const n = ARTISTS.length;
   ARTISTS.forEach((a, i) => {
-    const cw = (CW - 0.22 * 3) / 4;
+    const cw = (CW - 0.22 * (n - 1)) / n;
     const x = M + i * (cw + 0.22);
-    s.addShape("roundRect", { x, y: 4.82, w: cw, h: 1.9, rectRadius: 0.08, fill: { color: CARD_L }, line: { type: "none" }, shadow: nowShadow() });
-    s.addShape("ellipse", { x: x + 0.18, y: 5.0, w: 0.3, h: 0.3, fill: { color: a.accent }, line: { type: "none" } });
-    s.addText(a.name, { x: x + 0.56, y: 4.98, w: cw - 0.72, h: 0.34, fontSize: 12.5, bold: true, color: INK, fontFace: "Arial", margin: 0, valign: "middle" });
-    s.addText(SUMMARY_ROWS[i][6], { x: x + 0.18, y: 5.42, w: cw - 0.36, h: 0.6, fontSize: 11, bold: true, color: a.accent, fontFace: "Arial", margin: 0 });
-    s.addText(brief(a.status, 46), { x: x + 0.18, y: 6.06, w: cw - 0.36, h: 0.56, fontSize: 9.5, color: MUTE_L, fontFace: "Arial", margin: 0 });
+    s.addShape("roundRect", { x, y: 4.44, w: cw, h: 2.3, rectRadius: 0.08, fill: { color: CARD_L }, line: { type: "none" }, shadow: nowShadow() });
+    const p = pic(a.name, "portrait");
+    if (p) {
+      s.addImage({ path: p.path, x: x + 0.2, y: 4.64, w: 0.62, h: 0.62, rounding: true,
+                   sizing: { type: "cover", w: 0.62, h: 0.62 } });
+    } else {
+      s.addShape("ellipse", { x: x + 0.2, y: 4.64, w: 0.62, h: 0.62, fill: { color: a.accent }, line: { type: "none" } });
+    }
+    s.addText(a.name, { x: x + 0.94, y: 4.64, w: cw - 1.14, h: 0.62, fontSize: 13.5, bold: true, color: INK, fontFace: "Arial", margin: 0, valign: "middle" });
+    s.addText(SUMMARY_ROWS[i][6], { x: x + 0.2, y: 5.42, w: cw - 0.4, h: 0.62, fontSize: 12, bold: true, color: a.accent, fontFace: "Arial", margin: 0 });
+    s.addText(brief(a.status, 46), { x: x + 0.2, y: 6.08, w: cw - 0.4, h: 0.56, fontSize: 10, color: MUTE_L, fontFace: "Arial", margin: 0 });
   });
 
-  shortNote(s, "4組すべて未所属。saewool＝リーチはあるがDSPに落ちていない。Ryudai＝到達力は完成、音楽資産ゼロ。yuuna＝ER約22%で出せば必ず聴かれる。Vivanz Eden＝実需はあるが供給が追いつかない。動く順番は yuuna ＞ Ryudai ＞ Vivanz Eden ＞ saewool。");
+  shortNote(s, "3組すべて未所属。Vivanz Eden＝実需はあるが供給が追いつかない。Ryudai＝到達力は完成、音楽資産ゼロ。yuuna＝ER約22%で出せば必ず聴かれる。動く順番は Vivanz Eden ＞ yuuna ＞ Ryudai。");
 }
 
 // ═══ 各アーティスト（4枚組） ═══════════════════════════════════════════════
@@ -219,14 +236,29 @@ ARTISTS.forEach((a) => {
     s.addText("契約ステータス", { x: 9.25, y: 0.62, w: 3.3, h: 0.24, fontSize: 8.5, color: MUTE_D, fontFace: "Arial", margin: 0 });
     s.addText(a.status, { x: 9.25, y: 0.86, w: 3.3, h: 0.42, fontSize: 10, bold: true, color: LIGHT, fontFace: "Arial", margin: 0 });
 
-    s.addText("「" + a.catch + "」", { x: M, y: 1.86, w: CW, h: 0.82, fontSize: 30, bold: true, color: a.accent, fontFace: "Arial", margin: 0 });
-    s.addText(a.catchSub, { x: M, y: 2.7, w: CW, h: 0.38, fontSize: 13.5, italic: true, color: "DCD9E8", fontFace: "Arial", margin: 0 });
-    s.addText(a.oneLine, { x: M, y: 3.28, w: CW, h: 1.26, fontSize: 12.5, color: "C7C3DA", fontFace: "Arial", margin: 0, lineSpacingMultiple: 1.3 });
+    const port = pic(a.name, "portrait");
+    const voc = pic(a.name, "vocalist");
+    const TW = port ? 8.75 : CW;   // ポートレートを置く分だけ本文を詰める
+    if (port) {
+      s.addShape("roundRect", { x: 9.52, y: 1.74, w: 3.26, h: 3.32, rectRadius: 0.06,
+                                fill: { color: CARD_D }, line: { type: "none" }, shadow: nowShadow() });
+      s.addImage({ path: port.path, x: 9.6, y: 1.82, w: 3.1, h: voc ? 2.28 : 3.16,
+                   sizing: { type: "cover", w: 3.1, h: voc ? 2.28 : 3.16 } });
+      if (voc) {
+        s.addImage({ path: voc.path, x: 9.6, y: 4.16, w: 0.98, h: 0.82,
+                     sizing: { type: "cover", w: 0.98, h: 0.82 } });
+        s.addText("Vo・Gt 菊地諒真", { x: 10.68, y: 4.16, w: 2.0, h: 0.82, fontSize: 9.5, bold: true,
+                                      color: "C7C3DA", fontFace: "Arial", margin: 0, valign: "middle" });
+      }
+    }
+    s.addText(a.catch, { x: M, y: 1.8, w: TW, h: 1.0, fontSize: 24, bold: true, color: a.accent, fontFace: "Arial", margin: 0, lineSpacingMultiple: 1.15 });
+    s.addText(a.catchSub, { x: M, y: 2.88, w: TW, h: 0.38, fontSize: 12.5, italic: true, color: "DCD9E8", fontFace: "Arial", margin: 0 });
+    s.addText(a.oneLine, { x: M, y: 3.32, w: TW, h: 1.32, fontSize: 12, color: "C7C3DA", fontFace: "Arial", margin: 0, lineSpacingMultiple: 1.3 });
     if (a.note) {
-      s.addText(a.note, { x: M, y: 4.58, w: CW, h: 0.44, fontSize: 9.5, bold: true, color: "FF8FA3", fontFace: "Arial", margin: 0, lineSpacingMultiple: 1.15 });
+      s.addText(a.note, { x: M, y: 4.66, w: TW, h: 0.42, fontSize: 9, bold: true, color: "FF8FA3", fontFace: "Arial", margin: 0, lineSpacingMultiple: 1.15 });
     }
 
-    statCards(s, a.stats, { x: M, y: 5.1, w: CW, h: 1.6, fill: CARD_D, label: MUTE_D, accent: a.accent });
+    statCards(s, a.stats, { x: M, y: 5.18, w: CW, h: 1.6, fill: CARD_D, label: MUTE_D, accent: a.accent });
 
     shortNote(s, `【${a.name}】キャッチ：${a.catch}／${a.catchSub}\n\n概要：${a.oneLine}\n\nステータス：${a.status}${a.note ? "\n\n" + a.note : ""}`);
   }
@@ -325,12 +357,19 @@ ARTISTS.forEach((a) => {
     a.refs.slice(0, 4).forEach((r, i) => {
       const y = 2.0 + i * 1.24;
       s.addShape("roundRect", { x: rx, y, w: rw, h: 1.12, rectRadius: 0.07, fill: { color: CARD_L }, line: { type: "none" } });
+      const th = refPic(a.name, i);
+      const tx = th ? 1.42 : 0;   // サムネイル分のインデント
+      if (th) {
+        s.addImage({ path: th.path, x: rx + 0.1, y: y + 0.1, w: 1.24, h: 0.92,
+                     sizing: { type: "cover", w: 1.24, h: 0.92 },
+                     hyperlink: { url: r.url, tooltip: r.url } });
+      }
       s.addText([
-        { text: r.label, options: { fontSize: 10, bold: true, color: INK, breakLine: true } },
-        { text: "→ " + brief(r.why, 46), options: { fontSize: 8.5, italic: true, color: MUTE_L } },
-      ], { x: rx + 0.18, y: y + 0.1, w: rw - 0.36, h: 0.78, margin: 0, fontFace: "Arial", lineSpacingMultiple: 1.1, valign: "top" });
+        { text: r.label, options: { fontSize: 9.5, bold: true, color: INK, breakLine: true } },
+        { text: "→ " + brief(r.why, 40), options: { fontSize: 8, italic: true, color: MUTE_L } },
+      ], { x: rx + 0.14 + tx, y: y + 0.09, w: rw - 0.28 - tx, h: 0.8, margin: 0, fontFace: "Arial", lineSpacingMultiple: 1.1, valign: "top" });
       s.addText("▶ 動画を開く", {
-        x: rx + 0.18, y: y + 0.86, w: rw - 0.36, h: 0.2, fontSize: 8, bold: true, color: "1155CC",
+        x: rx + 0.14 + tx, y: y + 0.87, w: rw - 0.28 - tx, h: 0.2, fontSize: 8, bold: true, color: "1155CC",
         fontFace: "Arial", margin: 0, hyperlink: { url: r.url, tooltip: r.url },
       });
     });
@@ -417,7 +456,7 @@ ARTISTS.forEach((a) => {
   const s = pres.addSlide();
   s.background = { color: DARK };
   s.addShape("ellipse", { x: -1.8, y: 4.6, w: 5.4, h: 5.4, fill: { color: "2A1F4D" }, line: { type: "none" } });
-  slideTitle(s, "CLOSING", "本日のアスク — 4組それぞれ、次の一手", { dark: true });
+  slideTitle(s, "CLOSING", "本日のアスク — 3組それぞれ、次の一手", { dark: true });
 
   CLOSING.asks.forEach((x, i) => {
     const y = 1.62 + i * 1.02;

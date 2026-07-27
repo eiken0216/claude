@@ -115,7 +115,7 @@ const body = [];
 // 表紙相当
 body.push(p(MEETING.org + "　" + MEETING.subtitle, { size: 19, color: MUTE, after: 60 }));
 body.push(p(MEETING.title, { bold: true, size: 44, after: 100 }));
-body.push(p("最近見つけた新人アーティスト 4組のご紹介", { size: 24, color: MUTE, after: 200, rule: true }));
+body.push(p("最近見つけた新人アーティスト 3組のご紹介", { size: 24, color: MUTE, after: 200, rule: true }));
 body.push(table([2400, 7300], [
   new TableRow({ children: [cell("開催日", { w: 2400, bold: true, fill: HEADFILL }), cell(MEETING.date, { w: 7300 })] }),
   new TableRow({ children: [cell("部門 ／ 発表者", { w: 2400, bold: true, fill: HEADFILL }), cell(MEETING.division + "　／　" + MEETING.presenter, { w: 7300 })] }),
@@ -131,7 +131,7 @@ body.push(new TableOfContents("目次", { hyperlink: true, headingStyleRange: "1
 body.push(new Paragraph({ children: [new PageBreak()] }));
 
 // サマリー
-body.push(h1("0. サマリー — 4組の位置づけ"));
+body.push(h1("0. サマリー — 3組の位置づけ"));
 body.push(p("全組ともレーベル未所属。フォロワー規模ではなく「詰まっている場所」が組ごとに違うため、レーベルの打ち手も分けて設計しています。", { after: 160 }));
 const sumW = [520, 1900, 1500, 1900, 2080, 1800];
 body.push(table(sumW, [
@@ -249,7 +249,7 @@ ARTISTS.forEach((a, idx) => {
 });
 
 // 追加候補
-body.push(h1("5. " + PENDING.title));
+body.push(h1(`${ARTISTS.length + 1}. ` + PENDING.title));
 body.push(p(PENDING.body, { after: 140 }));
 body.push(h2("追加候補のスクリーニング基準"));
 PENDING.criteria.forEach((c) => body.push(bullet(c)));
@@ -263,7 +263,7 @@ body.push(table(pdW, [
 body.push(new Paragraph({ children: [new PageBreak()] }));
 
 // クロージング
-body.push(h1("6. まとめ ／ 本日のアスク"));
+body.push(h1(`${ARTISTS.length + 2}. まとめ ／ 本日のアスク`));
 body.push(h2("組別のアスク"));
 CLOSING.asks.forEach((x) => body.push(bulletHB(x.h, x.b)));
 body.push(h2("動く順番"));
