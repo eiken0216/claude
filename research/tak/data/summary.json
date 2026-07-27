@@ -1,0 +1,49 @@
+{
+  "artist": {
+    "name": "TAK",
+    "realName": "ハン・ウォンタク",
+    "nationality": "韓国",
+    "born": "1991-08-27",
+    "label": "DORIDORI FRIENDS",
+    "distributor": "The Orchard Japan (ソニー・ミュージックグループ)",
+    "youtube": "https://www.youtube.com/@TAK_DRDR",
+    "youtubeSubscribers": 399000,
+    "youtubeVideos": 119,
+    "tiktok": { "handle": "@tak_drdr", "followers": 32900, "likes": 1700000, "videos": 106 },
+    "spotifyArtistId": "51Ce3GImOKK2xAGi3HiNns",
+    "vocadbId": 144288,
+    "debutAsVocaloidP": "2024-08-23 (mochimochi)"
+  },
+  "reachMix": {
+    "asOf": "2026-07-27",
+    "spotifyStreamsCumulative": 27768842,
+    "spotifyAsOf": "2026-03-23 (kworb)",
+    "youtubeOfficialMvViews": 93567080,
+    "youtubeUgcViewsSampled": 9618507,
+    "niconicoViewsMainTracks": 957968,
+    "subscriptionSharePct": 21,
+    "ugcVideoSharePct": 79
+  },
+  "youtubeAudienceViewWeighted": {
+    "note": "12本のMVコメント17,100件を言語判定し、各動画の再生数で加重。絵文字のみ/判定不能を除外して正規化。",
+    "en_total": 43.1, "ja": 29.4, "ko": 21.9,
+    "vi": 1.0, "zh": 0.8, "tl": 0.7, "fr": 0.6, "es": 0.4, "ru": 0.4
+  },
+  "ugcDerivatives": {
+    "note": "TAK楽曲の歌ってみた/カバー/踊ってみた/リミックス 268本",
+    "byCount": { "ja": 32.8, "ko": 27.2, "en": 17.5, "tr": 10.4, "zh": 3.0, "fr": 2.6, "id": 2.2 },
+    "byViews": { "ja": 60.2, "ko": 19.4, "zh": 8.0, "en": 6.4, "tr": 3.8, "ru": 1.3 }
+  },
+  "niconicoToYoutubeRatio": {
+    "note": "日本国内コア(ニコニコ)への定着度。日本のボカロPは概ね5〜8%。",
+    "TAK_PPPP": 1.10, "TAK_LEMON_MELON_COOKIE": 1.49, "TAK_mochimochi": 0.73,
+    "TAK_KodokuPsycho": 0.81, "TAK_MTMTM": 4.15,
+    "ref_メズマライザー": 5.27, "ref_ラビットホール": 4.92, "ref_ヴァンパイア": 7.63
+  },
+  "dataGaps": [
+    "Spotify Web API / open.spotify.com は組織のegressポリシーで 403 ブロック（国別リスナー取得不可）",
+    "Google Trends API は当環境のIPからレート制限(429)で取得不可",
+    "vidIQ はクレジット残高0（2026-08-01リセット）",
+    "TikTok は地域別データを公開していない"
+  ]
+}
