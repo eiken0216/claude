@@ -1,0 +1,589 @@
+<title>旧譜リバイバル 企画案 — いきものがかり／調査10曲</title>
+<style>
+:root{
+  --paper:#F5F5EF; --card:#FCFCFA; --card-2:#F0F0E8;
+  --ink:#17171B; --ink-2:#54544D; --ink-3:#8B8A80;
+  --rule:#DEDDD3; --rule-2:#EAE9E0;
+  --joy:#B5761A; --kima:#BE3466; --egao:#1B6E55; --survey:#2A64C4;
+  --accent:var(--survey);
+  --flag:#A64B1E;
+  --shadow:0 1px 2px rgba(23,23,27,.05), 0 8px 24px -18px rgba(23,23,27,.28);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#121216; --card:#1A1A1F; --card-2:#212127;
+    --ink:#F1F0EA; --ink-2:#A9A8A0; --ink-3:#77766E;
+    --rule:#2C2C33; --rule-2:#25252B;
+    --joy:#EEB349; --kima:#F0759C; --egao:#54C39B; --survey:#7BAEF5;
+    --flag:#E58A5C;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#121216; --card:#1A1A1F; --card-2:#212127;
+  --ink:#F1F0EA; --ink-2:#A9A8A0; --ink-3:#77766E;
+  --rule:#2C2C33; --rule-2:#25252B;
+  --joy:#EEB349; --kima:#F0759C; --egao:#54C39B; --survey:#7BAEF5;
+  --flag:#E58A5C;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.7);
+}
+:root[data-theme="light"]{
+  --paper:#F5F5EF; --card:#FCFCFA; --card-2:#F0F0E8;
+  --ink:#17171B; --ink-2:#54544D; --ink-3:#8B8A80;
+  --rule:#DEDDD3; --rule-2:#EAE9E0;
+  --joy:#B5761A; --kima:#BE3466; --egao:#1B6E55; --survey:#2A64C4;
+  --flag:#A64B1E;
+  --shadow:0 1px 2px rgba(23,23,27,.05), 0 8px 24px -18px rgba(23,23,27,.28);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic",system-ui,-apple-system,sans-serif;
+  font-size:15px; line-height:1.78; -webkit-font-smoothing:antialiased;
+}
+.gothic{font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic",system-ui,sans-serif}
+.mincho{font-family:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP",serif}
+.mono{font-family:ui-monospace,"SF Mono","SFMono-Regular",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+
+.wrap{max-width:940px;margin:0 auto;padding:40px 22px 100px}
+
+/* ── header ───────────────────────────── */
+.doc-head{border-bottom:1px solid var(--rule);padding-bottom:26px}
+.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+h1{font-size:clamp(25px,4.4vw,36px);line-height:1.3;margin:12px 0 10px;letter-spacing:-.01em;font-weight:800;text-wrap:balance}
+.dek{color:var(--ink-2);font-size:14.5px;max-width:60ch;margin:0}
+.byline{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+.src{font-size:11.5px;color:var(--ink-2);background:var(--card-2);border:1px solid var(--rule);border-radius:100px;padding:3px 11px}
+
+/* ── thesis ───────────────────────────── */
+.thesis{margin:32px 0 8px;padding:26px 0 0;display:grid;gap:20px;grid-template-columns:1fr}
+.thesis-q{margin:0;padding:0;border:0}
+.thesis-q p{
+  font-size:clamp(20px,3.4vw,27px);line-height:1.6;margin:0 0 10px;font-weight:400;
+  letter-spacing:.01em;text-wrap:balance;
+}
+.thesis-q p::before{content:"「"} .thesis-q p::after{content:"」"}
+.thesis-note{color:var(--ink-2);font-size:14px;max-width:62ch;margin:0}
+.thesis-note b{color:var(--ink)}
+
+/* ── sections ─────────────────────────── */
+section{margin-top:60px}
+.sec-head{display:flex;align-items:baseline;gap:12px;border-bottom:2px solid var(--accent);padding-bottom:9px;margin-bottom:6px}
+.sec-no{font-size:11.5px;font-weight:700;letter-spacing:.1em;color:var(--accent);flex:0 0 auto}
+h2{font-size:20px;margin:0;font-weight:800;letter-spacing:-.005em}
+.sec-sub{color:var(--ink-2);font-size:13.5px;margin:10px 0 22px;max-width:66ch}
+h3{font-size:16.5px;margin:38px 0 10px;font-weight:800;display:flex;align-items:center;gap:10px}
+h3::before{content:"";width:3px;height:16px;background:var(--accent);border-radius:2px;flex:0 0 auto}
+
+/* ── song accents ─────────────────────── */
+[data-song="joy"]{--accent:var(--joy)}
+[data-song="kima"]{--accent:var(--kima)}
+[data-song="egao"]{--accent:var(--egao)}
+[data-song="survey"]{--accent:var(--survey)}
+
+/* ── idea card ────────────────────────── */
+.ideas{display:grid;gap:16px}
+.idea{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:20px 22px;box-shadow:var(--shadow)}
+.idea-top{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:12px}
+.chip{font-size:10.5px;font-weight:700;letter-spacing:.05em;padding:2.5px 9px;border-radius:5px;white-space:nowrap}
+.chip.song{background:var(--accent);color:var(--card)}
+.chip.kind{background:var(--card-2);color:var(--ink-2);border:1px solid var(--rule)}
+.chip.diff{background:transparent;color:var(--ink-3);border:1px dashed var(--rule)}
+.idea h4{
+  font-size:19px;line-height:1.5;margin:0 0 4px;font-weight:800;letter-spacing:-.005em;text-wrap:balance;
+}
+.idea h4 .quo{color:var(--accent)}
+.idea .sub{font-size:12.5px;color:var(--ink-3);margin:0 0 14px}
+.spec{display:grid;grid-template-columns:88px 1fr;gap:9px 16px;margin:0;font-size:13.5px}
+.spec dt{color:var(--accent);font-weight:700;font-size:11.5px;letter-spacing:.04em;padding-top:3px}
+.spec dd{margin:0;color:var(--ink-2)}
+.spec dd b{color:var(--ink);font-weight:700}
+.spec dd.flagged{color:var(--flag)}
+.spec dd ul{margin:0;padding-left:1.1em}
+.spec dd li{margin-bottom:3px}
+
+/* ── comment quote ────────────────────── */
+.cm{margin:14px 0;padding:12px 0 12px 16px;border-left:2px solid var(--accent);background:transparent}
+.cm p{margin:0;font-size:15.5px;line-height:1.7}
+.cm p::before{content:"「"} .cm p::after{content:"」"}
+.cm cite{display:block;margin-top:6px;font-size:11.5px;color:var(--ink-3);font-style:normal;letter-spacing:.02em}
+.cm .hearts::before{content:"♥ ";color:var(--accent)}
+.cm .hearts{margin-left:8px;color:var(--ink-2)}
+.cmgrid{display:grid;gap:2px 26px;grid-template-columns:1fr}
+@media(min-width:720px){.cmgrid{grid-template-columns:1fr 1fr}}
+
+/* ── tables ───────────────────────────── */
+.tw{overflow-x:auto;border:1px solid var(--rule);border-radius:10px;background:var(--card);margin:14px 0}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:560px}
+th{text-align:left;font-size:11px;letter-spacing:.05em;color:var(--ink-2);background:var(--card-2);padding:9px 12px;font-weight:700;border-bottom:1px solid var(--rule);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--rule-2);color:var(--ink-2);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td b{color:var(--ink)}
+td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tier{display:inline-block;font-size:10.5px;font-weight:800;width:17px;height:17px;line-height:17px;text-align:center;border-radius:4px;color:var(--card);background:var(--ink-3)}
+.tier.s{background:var(--kima)} .tier.a{background:var(--joy)} .tier.b{background:var(--survey)} .tier.c{background:var(--ink-3)}
+
+/* ── principles ───────────────────────── */
+.pr{display:grid;gap:12px}
+@media(min-width:760px){.pr{grid-template-columns:1fr 1fr}}
+.pr>div{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:15px 17px;font-size:13.5px;color:var(--ink-2)}
+.pr b{display:block;color:var(--ink);font-size:14.5px;margin-bottom:5px}
+
+/* ── callout ──────────────────────────── */
+.callout{background:var(--card-2);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:15px 18px;font-size:13.5px;color:var(--ink-2);margin:18px 0}
+.callout b{color:var(--ink)}
+
+footer{margin-top:70px;padding-top:20px;border-top:1px solid var(--rule);font-size:12px;color:var(--ink-3)}
+footer h5{font-size:12px;color:var(--ink-2);margin:16px 0 6px;letter-spacing:.04em}
+footer ul{margin:0;padding-left:1.2em} footer li{margin-bottom:4px}
+a{color:var(--accent)}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+</style>
+
+<div class="wrap">
+
+<header class="doc-head">
+  <p class="eyebrow">旧譜プロモーション 企画案</p>
+  <h1>コメント欄は、17年分の同窓会だった。</h1>
+  <p class="dek">いきものがかり「じょいふる」「気まぐれロマンティック」「笑顔」を軸に、旧譜リバイバルの<b>きっかけ</b>を設計する。周年でリリースし、TikTokで拾わせるところまで。あわせて調査10曲の施策案。</p>
+  <div class="byline">
+    <span class="src">旧譜10曲 リバイバルヒット可能性調査（n=114／2026年7月）</span>
+    <span class="src">曲別×箇所別アプローチプラン</span>
+    <span class="src">原曲MVコメント採取 2026/7/30</span>
+    <span class="src">周年・タイアップは公開情報で照合済</span>
+  </div>
+</header>
+
+<div class="thesis" data-song="joy">
+  <blockquote class="thesis-q mincho">
+    <p>2005年〜2009年辺りに高校生やりたかった</p>
+    <p class="mono" style="font-size:12px;color:var(--ink-3);letter-spacing:.04em">じょいふる MV 最上位コメント ／ ♥ 9,947</p>
+  </blockquote>
+  <p class="thesis-note">ご提示の「思い出はカラフルだった」と同じやり方で、3曲＋調査10曲のコメント欄を実際に掘りました。結論として<b>コピーを書く必要はほとんどありません</b>。10年以上かけてリスナーが書き上げた言葉が既にあり、いいね数という「テスト済みの証拠」まで付いています。以下の企画はすべて、<b>①採取したコピー ②一言で説明できるキャスティングか演出のネタ ③照合済みの周年 ④TikTokの音源と型</b>の4点セットで組んでいます。</p>
+</div>
+
+<!-- ══════════════ 1 ══════════════ -->
+<section data-song="survey">
+  <div class="sec-head"><span class="sec-no mono">01</span><h2>いま手元にある「時間の資産」</h2></div>
+  <p class="sec-sub">周年は作れませんが、探せます。今日（2026年7月30日）から12か月で使えるものを、公開情報で照合しました。20周年イヤーと47都道府県ツアーが同時に走っている今年は、旧譜を動かすのに最も条件が良い年です。</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>時期</th><th>資産</th><th>使える曲</th><th>状態</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">〜2027/3</td><td><b>いきものがかり メジャーデビュー20周年イヤー</b>（2006/3/15「SAKURA」）</td><td>全曲</td><td>進行中</td></tr>
+      <tr><td class="mono">2026/4〜2027</td><td><b>47都道府県ツアー「超全国あんぎゃー!!」</b>（厚木スタート、11月北海道公演まで発表済）</td><td>全曲</td><td><b>進行中＝最強の実行装置</b></td></tr>
+      <tr><td class="mono">2026年内</td><td><b>ポケモン30周年イヤー</b>（『赤・緑』1996/2/27／月替わりテーマ展開中）</td><td>笑顔</td><td>進行中</td></tr>
+      <tr><td class="mono">2026/9/23</td><td>「YELL／じょいふる」リリース記念日（2009年・15thシングル）</td><td>じょいふる</td><td>17周年（端数）</td></tr>
+      <tr><td class="mono">2026/11/11</td><td><b>ポッキーの日</b>／じょいふる＝江崎グリコ「ポッキーチョコレート」CMソング</td><td>じょいふる</td><td>本命フック</td></tr>
+      <tr><td class="mono">2026/11/7</td><td><b>中島美嘉 デビュー25周年</b>（2001/11/7「STARS」）</td><td>雪の華・ORION・GLAMOROUS SKY</td><td>3曲を1つの傘で</td></tr>
+      <tr><td class="mono">2026/12/3</td><td>「気まぐれロマンティック」リリース記念日（2008年・12thシングル）</td><td>気まぐれロマンティック</td><td>18周年（端数）</td></tr>
+      <tr><td class="mono">2027/1〜3</td><td>卒業シーズン</td><td><b>笑顔</b>・ブルーバード</td><td>笑顔の主戦場</td></tr>
+      <tr><td class="mono">2027/2/15</td><td><b>『NARUTO -ナルト- 疾風伝』放送20周年</b>（2007/2/15放送開始）</td><td>ブルーバード</td><td>海外込みの本命</td></tr>
+      <tr><td class="mono">2027/2/27</td><td>Pokémon Day</td><td>笑顔</td><td>卒業と連結可</td></tr>
+      <tr><td class="mono">2026年通年</td><td><b>T.M.Revolution 30周年</b>／<b>CHEMISTRY 25周年</b>／東京ラブストーリー35年</td><td>HOT LIMIT・PIECES OF A DREAM・ラブストーリーは突然に</td><td>他社側の追い風</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout"><b>すでに火が付き始めている2件。</b>①T.M.Revolutionは30周年で、<b>2026年7月10日にTHE FIRST TAKEで“HOT LIMITスーツ”着用の「HOT LIMIT」</b>を出しています（＝調査Tier S曲の追い風が3週間前に発生）。②ブルーバードは<b>2026年7月に「JUMP MV／NARUTO×ブルーバード」が公開</b>され、コメント欄にPUBG×NARUTO疾風伝コラボからの流入が見えます。この2曲は「仕込み」ではなく<b>刈り取り</b>のフェーズです。</div>
+</section>
+
+<!-- ══════════════ 2 ══════════════ -->
+<section data-song="survey">
+  <div class="sec-head"><span class="sec-no mono">02</span><h2>設計原則</h2></div>
+  <p class="sec-sub">調査（n=114／自由記述約1,500件）の横断知見と、コメント採取で見えたことを突き合わせた6点。以降の全企画はこの制約下で書いています。</p>
+
+  <div class="pr">
+    <div><b>コピーは書かず、採る。</b>「思い出はカラフルだった」「致死量の平成」「ゲノセクト、おれ今年もう20歳だよ」——いずれもコメント欄の実在の言葉で、いいね数という事前テスト付き。公式が新しく書いた言葉より、拾った言葉のほうがコメント欄で「それ書いたの自分です」が発生し、二次拡散する。</div>
+    <div><b>参加設計は「上半身・2人・教室で撮れる」。</b>調査の合意点。フルダンスは要求されていない。手振り・双子ダンス・ペアダンスが拡散条件で、全曲で1番サビが最多得票（60〜83%）。難易度を上げるのは「見せる枠」（GLAMOROUS SKY大サビ等）だけ。</div>
+    <div><b>倍速音源は施策ではなく前提。</b>10曲すべての自由記述で自発的に倍速が挙がる。ただし「イントロは遅く」（ブルーバード）「A/Bメロ1.25倍速・サビ等速」（PIECES OF A DREAM）など逆張りもあり、<b>箇所別×速度別の複数バージョン配布</b>が正解。</div>
+    <div><b>イントロは「踊る場所」ではなく「仕掛ける場所」。</b>イントロを選んだ回答者は振り付けではなく企画名・導入演出・BGM需要を語る。イントロ単体の公式切り出し音源に固有の価値がある（気まロマの0:01ピコピコ音がまさにこれ）。</div>
+    <div><b>「古い」は弱点ではなく商品。</b>平成レトロは「エモい・おしゃれ」として肯定消費されている。当時の画質・衣装・MV感は<b>直すのではなく強調する</b>。加工なし・低画質・映え無関心が、そのまま差別化になる。</div>
+    <div><b>認知の入口は親、火種はミーム。</b>ほぼ全曲で認知経路1位が親・家族。そして既にミーム資産を持つ曲（モノマネ・CM・アニメ・芸人ネタ）はバズ期待も高い。<b>新規の物語を立てるより、既にある遊びを公式化する</b>ほうが速い。</div>
+  </div>
+</section>
+
+<!-- ══════════════ 3 じょいふる ══════════════ -->
+<section data-song="joy">
+  <div class="sec-head"><span class="sec-no mono">03</span><h2>じょいふる</h2></div>
+  <p class="sec-sub">15thシングル「YELL／じょいふる」2009年9月23日／江崎グリコ「ポッキーチョコレート」CMソング。調査10曲には未収録ですが、コメント欄の熱量は3曲中もっとも高く、しかも<b>ほぼ全部が「平成の学校」という一つの方向</b>を指しています。ポッキーCM曲であることが、11月11日という指定席を用意してくれています。</p>
+
+  <div class="cmgrid">
+    <blockquote class="cm mincho"><p>こんな感じの文化祭をしたかった人生だった......</p><cite>じょいふる MV<span class="hearts mono">2,622</span></cite></blockquote>
+    <blockquote class="cm mincho"><p>致死量の平成から飛んできました</p><cite>じょいふる MV<span class="hearts mono">1,620</span></cite></blockquote>
+    <blockquote class="cm mincho"><p>高校で昼休みにj-popが流れてたんですが、『Lemon』とか『夜に駆ける』とか最新の人気曲も流れるのに『じょいふる』が流れた時だけクラス全員が一斉に踊り出すっていう謎現象が起きてましたw</p><cite>じょいふる MV<span class="hearts mono">922</span></cite></blockquote>
+    <blockquote class="cm mincho"><p>今ほどルッキズムもなくて写真も加工しなくて映えも意識しないありのままの姿をみせる平成が羨ましい</p><cite>じょいふる MV<span class="hearts mono">342</span></cite></blockquote>
+  </div>
+
+  <div class="ideas">
+
+    <article class="idea">
+      <div class="idea-top"><span class="chip song">じょいふる</span><span class="chip kind">リアルイベント＋Web＋映像</span><span class="chip diff">実行難度 中</span></div>
+      <h4><span class="quo">「2005年〜2009年辺りに高校生やりたかった。」</span><br>——じゃあ、建てます。</h4>
+      <p class="sub">1日限りの「2009年の高校」を開校する。最上位コメント（♥9,947）を、そのまま施策名にする。</p>
+      <dl class="spec">
+        <dt>つくるもの</dt><dd>体育館規模の会場を2009年の学校として再現。入口でスマホを預け<b>コンパクトデジカメを貸与</b>（＝撮れる写真が全部当時の画質になる／「加工しない平成が羨ましい」への直接の回答）。ガリ版風プリント、購買、掃除の時間、そして<b>昼休みの校内放送でじょいふるが流れたら全員が踊る</b>——♥922のコメントの再現がクライマックス。参加者は入場時に<b>「1年2組」</b>へ配属（ファンクラブ名「超１年２組」と接続）。</dd>
+        <dt>Web</dt><dd>「#じょいふる学籍番号」ジェネレーター。顔写真＋名前＋部活＋卒業年を入れると2009年仕様の生徒証／プリ帳フレームが生成される。<b>低画質・退色・日付焼き込みが仕様</b>。これがイベント抽選券も兼ねる。</dd>
+        <dt>効く理由</dt><dd>コメント欄の願望が「文化祭をしたかった」「密が恋しい」（♥4,040）と<b>体験の欠落</b>で語られている。映像を見せるより、欠落を埋める場を渡すほうが強い。当日はUGCが会場から自動で発生する。</dd>
+        <dt>タイミング</dt><dd>文化祭・体育祭シーズンの<b>2026年9〜10月</b>。9/23（リリース記念日）に告知、10月に開催、11/11に映像化して回収。</dd>
+        <dt>TikTok</dt><dd>音源＝<b>1番サビ（等速／1.25倍速の2種）</b>。型＝「団ダンス」8カウントの上半身振りを公式配布。仕込みは平成ギャル・古着・コスプレ・学生系クリエイター。<b>学校単位で入る</b>のが要点で、応援団・チア・吹奏楽部は1投稿に数十人が写る＝拡散係数が個人投稿と桁違い。</dd>
+        <dt>要確認</dt><dd class="flagged">会場での音源使用許諾、参加者の肖像利用、デジカメ貸出のオペレーション（数百台規模なら現実的にはレンタル＋使い捨てカメラ併用）。</dd>
+      </dl>
+    </article>
+
+    <article class="idea">
+      <div class="idea-top"><span class="chip song">じょいふる</span><span class="chip kind">カバーMVシリーズ</span><span class="chip diff">実行難度 中</span></div>
+      <h4><span class="quo">「思い出はカラフルだった」</span>を、7回に分ける。</h4>
+      <p class="sub">ご提案（KAWAII LAB.のイエロー担当のみでカバー）を、単発ではなく<b>色ごとの連作</b>にする案。</p>
+      <dl class="spec">
+        <dt>つくるもの</dt><dd>「色でしか集まっていないメンバー」という一発ネタは<b>説明が0秒で済む</b>＝TikTok向き。これを1色1本の連作にして、各回で音源のキー・テンポ・アレンジを変える。演出はMV内で色が戻る構造にする：モノクロの教室 → サビで<b>その色だけが着色</b> → 最終回で全色が乱入して画面が満彩度になり、「思い出はカラフルだった」で終わる。</dd>
+        <dt>効く理由</dt><dd>色替え連作は<b>音源が複数走る</b>のが最大の利点。1つの音源に全ての投稿が集中せず、「推しの色の回」で使い分けが起きる＝TikTok上で同時に複数のトレンドが立つ。加えて各回で異なるファンダムが動くので、7回分の立ち上がりを買える。</dd>
+        <dt>タイミング</dt><dd>各色を9月〜11月に週次投下 → <b>11月11日ポッキーの日に「全色集合ver.」</b>。ポッキーは「分ける・シェアする」商材で、調査の拡散条件「2人組で参加できる設計」と構造が一致する（ポッキーを1本ずつ持って2人で振る、など）。</dd>
+        <dt>TikTok</dt><dd>各色回の30秒を音源化。振り付けは全色共通・色ごとに1ポーズだけ差分＝「自分の色の振り」を覚える動機になる。</dd>
+        <dt>要確認</dt><dd class="flagged">各グループのメンバーカラーの現行設定（改変・卒業で変動するため要最新確認）、事務所横断の出演調整、ポッキー側の許諾（CM曲であることは公式資産だが、記念日への相乗りは要相談）。</dd>
+      </dl>
+    </article>
+
+    <article class="idea">
+      <div class="idea-top"><span class="chip song">じょいふる</span><span class="chip kind">企業コラボ</span><span class="chip diff">実行難度 高</span></div>
+      <h4>名字が同じだけの、17年越しの初対面。</h4>
+      <p class="sub">「じょいふる」×ファミリーレストラン「ジョイフル」。コメント欄が17年言い続けているネタを、公式が拾う。</p>
+      <div class="cm mincho"><p>ジョイフルを、聞くと、どうしてもファミリーレストラン、ジョイフルが、頭からはなれません。</p><cite>じょいふる MV コメント</cite></div>
+      <dl class="spec">
+        <dt>つくるもの</dt><dd>店内BGMジャック（1時間ごとにじょいふる）、期間限定パフェ、呼び出しベルの音を「とぅ たいっ！たいっ！たいっ！」に差し替え、レシート裏に歌詞1行。<b>楽曲とブランドに何の関係もない</b>ことがそのまま企画の面白さになる。</dd>
+        <dt>効く理由</dt><dd>調査でHOT LIMITについて確認された「<b>公式が真面目に寄せすぎないほうが広がる</b>」を横流用できる数少ない企画。加えてジョイフルの店舗網は西日本に厚く、<b>47都道府県ツアーの地方公演と地理的に重なる</b>——「ライブ後にジョイフル」という導線が実際に成立する。</dd>
+        <dt>タイミング</dt><dd>ツアー地方公演に合わせた地域ローテーション。全国一斉より、公演のある県だけ実施のほうが「うちの県に来た」感が出る。</dd>
+        <dt>TikTok</dt><dd>型＝「ドリンクバー往復ダンス」。ネタ全振り。店内撮影は他の客の映り込みが問題になるので、<b>深夜帯／貸切枠のみ撮影可</b>とルール化して公式が枠を提供する。</dd>
+        <dt>要確認</dt><dd class="flagged">株式会社ジョイフル側の意向次第（商標・表記の扱い含む）。実現しなくても「打診した」という事実自体が話題化しうるが、勝手な発表は不可。</dd>
+      </dl>
+    </article>
+
+    <article class="idea">
+      <div class="idea-top"><span class="chip song">じょいふる</span><span class="chip kind">ドキュメンタリー／UGC</span><span class="chip diff">実行難度 低</span></div>
+      <h4>母校で、もう一度撮らせてください。</h4>
+      <p class="sub">MVのロケ地に「私の母校」が混ざっているという事実を使う。</p>
+      <div class="cm mincho"><p>MVがYELLと同じ中学校。そして私の母校。初めて見た時は衝撃的でした。</p><cite>じょいふる MV<span class="hearts mono">1,155</span></cite></div>
+      <dl class="spec">
+        <dt>つくるもの</dt><dd>同じ校舎・同じアングルで、いまの在校生とあの頃の卒業生を撮り直す<b>「17年後の同じ場所」MV</b>。2009年の映像と現在をカット単位で重ねる。ドキュメンタリー本編1本＋ショート10本に分解。</dd>
+        <dt>効く理由</dt><dd>「発売時にMV出てたら再生数1億こえてたでしょ」というコメントが示すのは、<b>この曲のMVはまだ十分に消費されていない</b>ということ。原曲MVの再生に直接返る施策として最も効率が良い。</dd>
+        <dt>タイミング</dt><dd>撮影は夏休み中（8月）、公開は文化祭シーズン。</dd>
+        <dt>TikTok</dt><dd>型＝「#母校で踊ってきた」。卒業生が母校に戻って踊る。ダンス経験は不要で、場所が主役なので参加ハードルが低い。</dd>
+        <dt>要確認</dt><dd class="flagged">学校・教育委員会の撮影許諾、在校生の肖像同意。顔を出さずに成立するカット設計を用意しておく。</dd>
+      </dl>
+    </article>
+
+  </div>
+</section>
+
+<!-- ══════════════ 4 気まぐれロマンティック ══════════════ -->
+<section data-song="kima">
+  <div class="sec-head"><span class="sec-no mono">04</span><h2>気まぐれロマンティック</h2></div>
+  <p class="sec-sub">12thシングル 2008年12月3日／フジテレビ系『セレブと貧乏太郎』主題歌。この曲は<b>すでに三方向に導線が開いています</b>：アニメ『からかい上手の高木さん』のEDカバー、TWICE ナヨンのカバー音源（2025年5月30日配信）、そしてコメント欄の「平成」中毒。3曲の中で唯一、海外と現役アニメ層を最初から数えられます。</p>
+
+  <div class="cmgrid">
+    <blockquote class="cm mincho"><p>平成ってカラフルだよな</p><cite>気まぐれロマンティック MV<span class="hearts mono">2,707</span></cite></blockquote>
+    <blockquote class="cm mincho"><p>0:01 このピコピコ音からの曲入りがたまらない／もう曲の一部だと思ってる</p><cite>気まぐれロマンティック MV<span class="hearts mono">2,093</span></cite></blockquote>
+    <blockquote class="cm mincho"><p>いわゆるアイドルソングみたいな曲をアイドルが真似出来ないような歌唱力で歌うところがカッコイイと思う</p><cite>気まぐれロマンティック MV<span class="hearts mono">12,000</span></cite></blockquote>
+    <blockquote class="cm mincho"><p>MVあるある似てる人いる／1:23 左から２番目 松本人志／2:05 1番右 サンシャイン池崎</p><cite>気まぐれロマンティック MV<span class="hearts mono">1,761</span></cite></blockquote>
+  </div>
+
+  <div class="ideas">
+
+    <article class="idea">
+      <div class="idea-top"><span class="chip song">気まロマ</span><span class="chip kind">映像シリーズ</span><span class="chip diff">実行難度 低</span></div>
+      <h4><span class="quo">「アイドルが真似できない」</span>と言われた曲を、アイドルが歌う。</h4>
+      <p class="sub">♥12,000のコメントを、そのまま挑戦状として企画名にする。3曲の中で最も費用対効果が高い案。</p>
+      <dl class="spec">
+        <dt>つくるもの</dt><dd>縦型・一発撮り・加工なしのカバーシリーズ。歌詞テロップだけ。出演は<b>現役アイドル／歌い手／K-POPの日本語楽曲勢</b>を毎回1組。オープニングに毎回このコメントを1枚テロップで出す＝「なぜこの企画があるのか」が5秒で伝わる。</dd>
+        <dt>効く理由</dt><dd>①比較が発生する構造になっている。同じサビで複数の歌唱が並ぶと「誰が一番」のコメント戦争が自動で起きる。②<b>TWICEナヨンのカバー実績が既にある</b>ので、K-POP側にとって前例のある依頼になり、打診の通りやすさが違う。③調査の「歌うま文脈」需要（原キーチャレンジ・鬼レンちゃん系）を、いきものがかり側で回収できる。</dd>
+        <dt>タイミング</dt><dd><b>12月3日（リリース記念日）</b>に第1弾。以降隔週。バレンタイン（2/14）に「対決編」で締める。</dd>
+        <dt>TikTok</dt><dd>各回のサビ30秒を個別音源として公開。歌ってみた勢に開放。<b>ダンス不要</b>なので、振り付けを覚えない層をそのまま取り込める。</dd>
+        <dt>要確認</dt><dd class="flagged">カバー許諾のスキーム（原盤ではなく新録なので比較的軽い）、出演交渉。</dd>
+      </dl>
+    </article>
+
+    <article class="idea">
+      <div class="idea-top"><span class="chip song">気まロマ</span><span class="chip kind">音源設計</span><span class="chip diff">実行難度 低</span></div>
+      <h4>ピコッた瞬間、平成に戻る。</h4>
+      <p class="sub">イントロ2秒だけを公式音源として切り出す。おそらく最も安く、最も参加者数が多い施策。</p>
+      <dl class="spec">
+        <dt>つくるもの</dt><dd>冒頭のピコピコ音〜歌い出しまでの<b>2秒音源</b>を単独配信し、「平成に切り替わる効果音」として使い方を提示する。着替え／メイク前後／部屋のBefore-After／レトロ加工の切替点に置く。</dd>
+        <dt>効く理由</dt><dd>調査の横断知見が明示している通り、<b>イントロ単体の切り出し音源には固有の需要がある</b>。加えて♥2,093のコメントが「もう曲の一部だと思ってる」と言っている＝リスナーの側が既にこの2秒を独立した記号として認識している。そしてこの型は<b>踊らなくていい</b>ので、参加母数がダンス施策の桁を超える。</dd>
+        <dt>タイミング</dt><dd>いつでも可。上のカバーシリーズと同時に出して、両方の入口を同時に開けるのが良い。</dd>
+        <dt>TikTok</dt><dd>型＝「#ピコったら平成」。仕込みは変身・メイク・古着・ルームツアー系。トランジション動画クリエイターは音源の使い勝手だけで動くので、インフルエンサー費用が最も軽く済む枠。</dd>
+        <dt>要確認</dt><dd>—（原盤の一部切り出しなので社内処理で完結）</dd>
+      </dl>
+    </article>
+
+    <article class="idea">
+      <div class="idea-top"><span class="chip song">気まロマ</span><span class="chip kind">Web／UGC</span><span class="chip diff">実行難度 低</span></div>
+      <h4>MVの中に、あなたがいませんか。</h4>
+      <p class="sub">「似てる人探し」という既存の遊びを公式化し、当時のエキストラ本人を探し出す。</p>
+      <dl class="spec">
+        <dt>つくるもの</dt><dd>①原曲MVを高解像度でリマスター再公開。②「#気まロマ似てる人選手権」でタイムコード付き投稿を募集（♥1,761の遊びの公式化）。③本命は<b>当時MVに映った人を探す</b>企画。「1:23の左から2番目、私です」と名乗り出た人を集めて、18年後の同窓会として撮る。</dd>
+        <dt>効く理由</dt><dd>視線がMV本体に固定される＝旧譜プロモの本来の目的（原曲の再生・カタログの発見）に最短距離で返る。しかもタイムコード指定型の投稿は<b>視聴者に一時停止と巻き戻しをさせる</b>ので、再生時間の指標に効く。</dd>
+        <dt>タイミング</dt><dd>リマスター公開＝12月3日。同窓会編＝翌年3月（20周年イヤーの締め）。</dd>
+        <dt>TikTok</dt><dd>型＝タイムコード指摘の引用リプライ形式。芸人・モノマネ系に「本人が名乗り出る」ネタとして開放。</dd>
+        <dt>要確認</dt><dd class="flagged">当時のエキストラの連絡先は残っていない可能性が高い。名乗り出た人の本人確認と、当時の出演契約の範囲。</dd>
+      </dl>
+    </article>
+
+    <article class="idea">
+      <div class="idea-top"><span class="chip song">気まロマ</span><span class="chip kind">Web施策</span><span class="chip diff">実行難度 低</span></div>
+      <h4>あなたの平成は、何色でしたか。</h4>
+      <p class="sub">「思い出はカラフルだった」（じょいふる）と「平成ってカラフルだよな」（気まロマ）は同じ系譜。<b>カラフル</b>を20周年イヤーの通しモチーフにする。</p>
+      <dl class="spec">
+        <dt>つくるもの</dt><dd>生年と当時の記憶を数問答えると<b>平成カラーコード</b>が出る診断。結果には当時のヒット曲プレイリスト（調査10曲を混ぜられる）とシェア画像が付く。派生で「小学校6年間をいきものがかりと嵐とファンモンとGReeeeNとEXILEで過ごした人」（♥5,202）向けの<b>給食の時間ラジオ</b>——12時15分になるとブラウザで自動再生されるだけのページ。</dd>
+        <dt>効く理由</dt><dd>診断は結果画像が言語化を代行してくれるので、投稿の文章を書けない層まで拡散に参加できる。この曲のコメント欄は「平成」という単語だけで数万いいねが積み上がっており、<b>需要が単語レベルで確認済み</b>。</dd>
+        <dt>タイミング</dt><dd>12月（気まロマ記念日）→ 2月（バレンタイン）。じょいふるの「学籍番号ジェネレーター」と同じ器で作れば制作費は1本分。</dd>
+        <dt>TikTok</dt><dd>診断結果画面を映しながらサビが鳴る、という最も軽い型。仕込み不要でも回るが、平成レトロ系アカウントに初速だけ付ける。</dd>
+        <dt>要確認</dt><dd class="flagged">他社楽曲をプレイリストに含める場合の権利処理。診断で個人情報（生年月日）を集めない設計にする（年代の選択式で足りる）。</dd>
+      </dl>
+    </article>
+
+  </div>
+</section>
+
+<!-- ══════════════ 5 笑顔 ══════════════ -->
+<section data-song="egao">
+  <div class="sec-head"><span class="sec-no mono">05</span><h2>笑顔 ── 本命</h2></div>
+  <p class="sec-sub">26thシングル 2013年7月10日／<b>劇場版ポケットモンスター ベストウイッシュ「神速のゲノセクト ミュウツー覚醒」主題歌</b>。調査では好意度1位（平均4.29／Top2 78.9%）、バズ期待76.3%、「とてもあると思う」34.2%で1位、大サビ得票率36%は10曲中最高。<b>にもかかわらずタイアップを知っていた人は114人中9人（7.9%）</b>——この落差が今回いちばん大きな未使用資産です。しかもポケモンは今年30周年イヤー。</p>
+
+  <div class="callout"><b>調査が見落としていた点。</b>レポートは笑顔を「卒業ソング」として整理していますが、それは<b>リスナー側が後から与えた意味</b>です。本来はポケモン映画の主題歌で、コメント欄では「正直この曲は卒業ソングでもいいと思う」という言い方をされている——つまり卒業ソング化は自然発生であり、公式が主張したものではない。<b>2つの正体を持っている</b>ことが、そのまま企画の芯になります。</div>
+
+  <div class="cmgrid">
+    <blockquote class="cm mincho"><p>ゲノセクト、おれ今年もう20歳だよ…</p><cite>笑顔（劇場版ED動画）<span class="hearts mono">490</span></cite></blockquote>
+    <blockquote class="cm mincho"><p>18歳、おれ今年もうゲノセクトだよ..</p><cite>同<span class="hearts mono">228</span></cite></blockquote>
+    <blockquote class="cm mincho"><p>コメ欄にゲノセクトに成り果ててる人達おって草</p><cite>同<span class="hearts mono">12</span></cite></blockquote>
+    <blockquote class="cm mincho"><p>この曲ポケモンの主題歌だったんだ‥</p><cite>同</cite></blockquote>
+  </div>
+
+  <div class="ideas">
+
+    <article class="idea">
+      <div class="idea-top"><span class="chip song">笑顔</span><span class="chip kind">映像＋Web</span><span class="chip diff">実行難度 高（IP交渉）</span></div>
+      <h4><span class="quo">「ゲノセクト、おれ今年もう○○歳だよ。」</span></h4>
+      <p class="sub">コメント欄が13年かけて完成させた定型文がある。公式は<b>様式を渡すだけ</b>でよく、ミームを作る必要がない。</p>
+      <dl class="spec">
+        <dt>つくるもの</dt><dd>2013年に映画館にいた子どもたちの「いま」を撮るドキュメンタリーMV。当時の小学生は現在20代前半。当時のチケット半券・映画特典のカード・DSを持ってきてもらう。構成は<b>三段のコピー</b>で進む：「ゲノセクト、おれ今年もう○○歳だよ。」→「オウチニカエリタイ。」（劇中のゲノセクトの言葉。コメント欄でも引用されている）→ 大サビで「だから僕は笑ってほしいんだ」。</dd>
+        <dt>Web</dt><dd>年齢計算機。「2013年7月13日、あなたは○歳○ヶ月でした」を出し、<b>そのまま投稿できる定型カード</b>を生成する。既存ミームと1文字も違わない書式にすること——公式が言い換えると、そのミームは死ぬ。</dd>
+        <dt>効く理由</dt><dd>①ミームが既に自走しており、公式は火を点ける必要がなく<b>薪を足すだけ</b>で済む。②調査で笑顔は大サビ得票率36%（10曲中最高）＝「感動のピーク」として認識されている箇所と、この企画の感情のピークが一致する。③タイアップ認知7.9%なので、<b>ほぼ全員に対して「知らなかった」という驚きを供給できる</b>。</dd>
+        <dt>タイミング</dt><dd>ポケモン30周年イヤー内（2026年）に第1弾。本命は<b>2027年2月27日 Pokémon Day → 3月 卒業シーズン</b>の連結。「ポケモンからの卒業」という読み替えが、そのまま卒業ソング文脈に着地する。</dd>
+        <dt>TikTok</dt><dd>音源＝<b>大サビ</b>。型＝「○歳だった自分に見せたい写真」1枚 → 大サビで現在の自分。<b>ダンス不要・写真1枚</b>で成立するので参加コストは今回の全企画で最小。仕込みは20代前半のポケモン実況・ポケカ界隈（30周年で最も活発）・ゲーム系・エモ系。</dd>
+        <dt>要確認</dt><dd class="flagged">株式会社ポケモン／映画製作委員会の許諾が前提。劇中カットや「ゲノセクト」の名称・台詞の使用は必ず事前確認。<b>許諾が下りない場合の代替</b>：ゲノセクトに触れず「2013年の夏、映画館にいた人へ」という言い方に置き換えれば、ミームの側が勝手に補完する。</dd>
+      </dl>
+    </article>
+
+    <article class="idea">
+      <div class="idea-top"><span class="chip song">笑顔</span><span class="chip kind">MV／認知ギャップ設計</span><span class="chip diff">実行難度 中</span></div>
+      <h4>卒業式で泣いたその曲は、13年前の夏、映画館で流れていた。</h4>
+      <p class="sub">調査がPOP STARで発見した「あ！この曲なの!?」の構造を、笑顔では<b>逆向き</b>に使える。</p>
+      <dl class="spec">
+        <dt>つくるもの</dt><dd>前半は完全に卒業式の映像で進める（制服・体育館・卒業証書）。大サビで画面が<b>映画館の客席</b>に切り替わり、スクリーンの光が同じ顔を照らす。1本のMVで「みんなが知っている正体」と「本当の正体」を入れ替える。</dd>
+        <dt>効く理由</dt><dd>コメント欄に「この曲ポケモンの主題歌だったんだ‥」が実在し、調査でもタイアップ認知は7.9%。<b>驚きの在庫が92%分ある</b>。そして驚きはコメントを呼ぶ——POP STARで確認された「コメント欄が沸く流れ」を、こちらは仕込みなしで発生させられる。</dd>
+        <dt>タイミング</dt><dd>2027年1〜2月に公開し、3月の卒業で回収。</dd>
+        <dt>TikTok</dt><dd>型＝「知らなかった人だけコメントして」。音源は1番サビ（得票76%）で入り、大サビで切り替える2段構成の公式カット。</dd>
+        <dt>要確認</dt><dd class="flagged">映画館・スクリーン描写にポケモン映像を使うなら許諾必須。使わずに「あの夏の映画館」の空気だけで成立させる版も並行で設計しておく。</dd>
+      </dl>
+    </article>
+
+    <article class="idea">
+      <div class="idea-top"><span class="chip song">笑顔</span><span class="chip kind">配布パッケージ</span><span class="chip diff">実行難度 低</span></div>
+      <h4>6年生を送る会に、間に合わせる。</h4>
+      <p class="sub">学校での合唱需要が2026年時点で現役だという証拠が、コメント欄にある。</p>
+      <div class="cm mincho"><p>6年生送る会で歌うけど歌覚えれないからこれみて覚えます2026年</p><cite>笑顔（歌詞付き動画）</cite></div>
+      <dl class="spec">
+        <dt>つくるもの</dt><dd>先生向けの配布ページ：合唱譜（同声二部・混声三部）、ピアノ伴奏音源、パート練習音源、そして<b>公式の手話風サビ振り</b>。調査では「双子ダンス・手振り（手話風含む）」が約20件で笑顔の最多イメージ、かつ「コロナ自粛期の手話ダンスブームの再現」が複数から挙がっている。</dd>
+        <dt>効く理由</dt><dd>学校は<b>1回の採用で数十人が同時にこの曲を反復する</b>——広告では買えない接触量。しかも卒業後にその世代の「自分たちの曲」になり、10年後のコメント欄に戻ってくる（じょいふるとブルーバードが今そうなっている）。</dd>
+        <dt>タイミング</dt><dd><b>配布は11月まで</b>。学校の選曲は年末に固まるため、1月公開では間に合わない。ここは期限が厳しい。</dd>
+        <dt>TikTok</dt><dd>型＝手だけで完結する振り（＝顔を出さずに参加できる）。学校での撮影・肖像の扱いは各校方針に依存するので、<b>顔を写さずに成立する設計を主軸</b>にする。仕込みは手話クリエイター・保育士・教員系アカウント。</dd>
+        <dt>要確認</dt><dd class="flagged">合唱譜の出版・許諾スキーム、手話表現の監修（当事者団体の確認を入れる。「手話風」の扱いは丁寧に）。</dd>
+      </dl>
+    </article>
+
+    <article class="idea">
+      <div class="idea-top"><span class="chip song">笑顔</span><span class="chip kind">ツアー連動</span><span class="chip diff">実行難度 低</span></div>
+      <h4>日本のどこかに、この曲で泣いた春がある。</h4>
+      <p class="sub">進行中の47都道府県ツアーを、そのまま撮影ラインとして使う。追加の装置を作らなくていい案。</p>
+      <dl class="spec">
+        <dt>つくるもの</dt><dd>各公演地で1組だけ撮る。卒業生、親子、部活、6年生を送る会。47本のショートを積み上げ、ツアーファイナルで1本に編んだ<b>「笑顔／47」</b>を公開。歌詞は「花がまた咲いている」——コメント欄で最も引用されている一節（♥81「すべてがまた変わってもしまっても何度でも花を咲かせよう」）を土地ごとの花で受ける。</dd>
+        <dt>効く理由</dt><dd>ツアーは既に動いており、機材と人はすでに全国を回っている。<b>制作費の増分がほぼ移動費ゼロで済む</b>。さらに公演地ごとにローカルメディアの受け皿がある。</dd>
+        <dt>タイミング</dt><dd>2026年8月〜2027年、公演スケジュールに沿って随時。回収は2027年3月。</dd>
+        <dt>TikTok</dt><dd>型＝「#笑顔47 ○○県」。県対抗の構造にすると地元アカウントが自発的に参戦する。</dd>
+        <dt>要確認</dt><dd class="flagged">出演者の肖像同意（未成年は保護者同意）、公演スケジュールとの撮影班の調整。</dd>
+      </dl>
+    </article>
+
+  </div>
+</section>
+
+<!-- ══════════════ 6 調査10曲 ══════════════ -->
+<section data-song="survey">
+  <div class="sec-head"><span class="sec-no mono">06</span><h2>調査10曲：曲別の一手</h2></div>
+  <p class="sec-sub">Tier順。各曲1〜2案に絞り、レポートの「推奨アプローチ（確度順）」で最上位のものを企画の形に落としています。周年は公開情報で照合済。</p>
+
+  <h3>HOT LIMIT ／ T.M.Revolution<span class="tier s">S</span></h3>
+  <div class="ideas">
+    <article class="idea">
+      <div class="idea-top"><span class="chip song">HOT LIMIT</span><span class="chip kind">Webゲーム＋UGC</span><span class="chip diff">実行難度 中</span></div>
+      <h4>日本の夏は、風の音がする。</h4>
+      <dl class="spec">
+        <dt>状況</dt><dd><b>追い風が既に吹いている。</b>デビュー30周年で、2026年7月10日にTHE FIRST TAKEで“HOT LIMITスーツ”着用の一発撮りが公開済。調査でもバズ期待78.1%で10曲中1位、1番サビ得票83%も最高。<b>仕込みではなく刈り取り</b>。</dd>
+        <dt>つくるもの</dt><dd>回答者が自発的に発案したタグ名<b>「#妖精チャレンジ」</b>をそのまま公式採用（ドライヤー・扇風機・サーキュレーター1台で参加）。加えてWeb側に<b>「風速判定」</b>——スマホのマイクで風の音量を拾って風速スコアを出すブラウザゲーム。スコア画像がシェア素材になる。</dd>
+        <dt>効く理由</dt><dd>「風＋衣装＋ネタ全振り」という共通イメージが調査時点で回答者間に既に成立しており、公式が定義を配る必要がない。小道具1つで参加できる再現性が拡散条件を満たす。</dd>
+        <dt>タイミング</dt><dd>残り夏（8月）で即。9〜10月は体育祭・応援文脈へ横流し。2028年6月24日が楽曲30周年なので、そこを本丸に置いた2年計画も可。</dd>
+        <dt>TikTok</dt><dd>音源＝1番サビ頭＋大サビ倍速。仕込みはモノマネ系（実績者）、お笑い、フィットネス系。<b>公式は真面目に寄せない</b>（調査の明示的条件）。</dd>
+        <dt>要確認</dt><dd class="flagged">台風時の投稿を煽らないこと。風速企画は<b>荒天時は自動で「扇風機モード」に切り替える</b>設計にし、屋外を推奨しない文言を常時出す。</dd>
+      </dl>
+    </article>
+  </div>
+
+  <h3>100万回の「I love you」 ／ Rake<span class="tier s">S</span></h3>
+  <div class="ideas">
+    <article class="idea">
+      <div class="idea-top"><span class="chip song">100万回</span><span class="chip kind">Web装置＋新振付</span><span class="chip diff">実行難度 中</span></div>
+      <h4>2回目の、100万回。</h4>
+      <dl class="spec">
+        <dt>戦略</dt><dd>調査で最も戦略的な発見は<b>「既バズ曲の未消費パートを狙う」</b>——前回バズは1番サビ、だから<b>大サビに新しい振りを付ける</b>（回答者から明示2件、大サビ得票30%）。バズ期待77.2%、好意度4.07。</dd>
+        <dt>つくるもの</dt><dd>①<b>100万回カウンター</b>：サイト上で全ユーザーのタップを合算し、累計100万回に到達したらMVが解禁される。到達の瞬間をライブ配信。数字が企画装置になる曲なので、これが最も自然な形。②MV本体は前半＝古参インフルエンサーが「当時の振り」、後半＝現役世代が「新しい振り」。</dd>
+        <dt>コピー</dt><dd><b>「あの振り付け、まだ手が覚えてた。」</b>（回答者提案「この振り付け懐かしい♡」から）</dd>
+        <dt>タイミング</dt><dd>記念日・クリスマス・バレンタイン軸。<b>リリース日は2011年3月9日で震災の2日前</b>——3月の「あの日」文脈に寄せる建て方は避ける。</dd>
+        <dt>TikTok</dt><dd>倍速音源＋「君が好き」でハートを作る手振り（約22件で全曲最大級の合意）。仕込みはミクチャ／初期TikTok世代の古参クリエイター。</dd>
+        <dt>要確認</dt><dd class="flagged">カウンターの不正対策（連打bot）。到達を演出で操作しないこと——公表数字を操作すると企画の前提が崩れる。</dd>
+      </dl>
+    </article>
+  </div>
+
+  <h3>ブルーバード ／ いきものがかり<span class="tier a">A</span></h3>
+  <div class="ideas">
+    <article class="idea">
+      <div class="idea-top"><span class="chip song">ブルーバード</span><span class="chip kind">海外＋国内の二正面</span><span class="chip diff">実行難度 中</span></div>
+      <h4><span class="quo">Lyrics understood: 0% / Emotions reached: 100%</span></h4>
+      <p class="sub">コメント欄が英語で埋まっている（♥10,000のこの一文が象徴）。聴取経験率96.5%で10曲中1位、イントロ得票35%も最高クラス。</p>
+      <dl class="spec">
+        <dt>状況</dt><dd>2026年7月に「JUMP MV／NARUTO×ブルーバード」が公開され、PUBG×NARUTO疾風伝コラボからの流入も見える。<b>いま国際的な導線が開いている。</b></dd>
+        <dt>海外の一手</dt><dd>♥10,000のコメントを企画名に採用。<b>18年間、意味を知らずに歌ってきた海外ファンに、初めて歌詞の意味を見せる</b>リアクション映像＋多言語リリックビデオ。「これって外国の曲なのってくらい、海外コメントが多いな」（♥9,605）という日本側の驚きも同時に素材になる。</dd>
+        <dt>国内の一手</dt><dd>体育祭シーズン（9〜10月）に「羽ばたく」振り（約25件で圧倒的最多）＋倍速で内カメ／外カメを交互に撮り合うフォーマット（回答者案）。アウトロのハーモニカを別出しした<b>エモ音源</b>も切る（単独指名あり）。</dd>
+        <dt>タイミング</dt><dd>本命は<b>2027年2月15日『NARUTO -ナルト- 疾風伝』放送20周年</b>。それまでは9〜10月の体育祭で国内を温めておく。</dd>
+        <dt>要確認</dt><dd class="flagged">NARUTO側の許諾（アニメ映像・キャラクター）。多言語字幕の翻訳監修（歌詞の解釈は繊細なので、機械翻訳では出さない）。</dd>
+      </dl>
+    </article>
+  </div>
+
+  <h3>POP STAR ／ 平井堅<span class="tier a">A</span></h3>
+  <div class="ideas">
+    <article class="idea">
+      <div class="idea-top"><span class="chip song">POP STAR</span><span class="chip kind">Webクイズ＋MV</span><span class="chip diff">実行難度 低</span></div>
+      <h4>この曲、曲名わかる？</h4>
+      <dl class="spec">
+        <dt>戦略</dt><dd>認知ギャップが最大の武器。<b>アーティスト認知63.2%に対し曲名認知32.5%</b>。「サビは知っているが曲名を知らない」を、そのまま出題形式に変換する。</dd>
+        <dt>つくるもの</dt><dd>①<b>「サビだけクイズ」</b>：調査10曲のサビを聴かせて曲名を当てる横断Web企画（レポートの横断施策案の実装）。結果カードに正答率と「あなたが青春だった年」を出す。②MVは<b>モノマネ芸人が本家より先に登場</b>し、最後に本人が出る構成。認知経路がモノマネ番組であるという実態をそのまま使う。</dd>
+        <dt>TikTok</dt><dd>A/Bメロで聴かせ、サビで正体が判明してコメント欄が沸く2段構成（回答者の明示提案）。振りはティッシュを星型に開く／「POP STAR」でジャンプ——<b>小道具1つ・低コスト</b>。</dd>
+        <dt>タイミング</dt><dd>8月31日（リリース記念日）。クイズ企画は10曲横断なので、他曲の施策の入口も兼ねる。</dd>
+        <dt>要確認</dt><dd class="flagged">10曲横断企画は<b>他社原盤の許諾が10件必要</b>。ここが最大の障壁。まず自社カタログ内で成立する版を作り、他社は順次追加する形が現実的。</dd>
+      </dl>
+    </article>
+  </div>
+
+  <h3>雪の華・ORION・GLAMOROUS SKY ／ 中島美嘉<span class="tier b">B</span><span class="tier c">C</span></h3>
+  <div class="ideas">
+    <article class="idea">
+      <div class="idea-top"><span class="chip song">中島美嘉 3曲</span><span class="chip kind">周年の傘＋Web装置</span><span class="chip diff">実行難度 中</span></div>
+      <h4>25年分の冬が、11月7日に来る。</h4>
+      <dl class="spec">
+        <dt>戦略</dt><dd><b>2026年11月7日がデビュー25周年</b>（2001年「STARS」）。この日付は<b>冬の入口</b>で、雪の華・ORIONの季節フックと完全に一致する。3曲を1つの傘の下に置けるのは10曲中この3曲だけ。</dd>
+        <dt>本命施策</dt><dd><b>「初雪トリガー」</b>：気象データと連動し、<b>自分の地域に初雪が降った日にだけ</b>特別映像が解禁されるサイト。解禁日が地域ごとにバラけるので、「うちの県、今日解禁されました」という報告が自然にUGCになる。待つ体験そのものが投稿の理由になる。</dd>
+        <dt>雪の華</dt><dd>1.25倍速＋簡単振り（速度指定まで回答にある）／原キーチャレンジと精密採点連動の「歌うま」企画。好意度4.13は10曲中2位。</dd>
+        <dt>ORION</dt><dd>「泣いたのは」で顔を撫でる振り——<b>2人が独立に同じ仕草を提案</b>しており再現性が高い。夜景×マフラー×口パク。TikTok上は未開拓の空白地帯という位置づけを活かす。</dd>
+        <dt>GLAMOROUS SKY</dt><dd>10月ハロウィンに<b>#NANAメイクチャレンジ</b>。イントロ＝変身前、1番サビ＝変身後（簡単・上半身）、大サビ＝高難度の「見せる枠」と難易度を描き分ける。「Sunday〜」で1週間コーデ紹介（回答1件だが箇所と企画が直結した唯一の案）は<b>7日連続投稿</b>を誘発するので構造的に強い。</dd>
+        <dt>タイミング</dt><dd>10月＝GLAMOROUS SKY（ハロウィン）→ 11月7日＝25周年で3曲同時 → 12〜2月＝雪の華・ORION。</dd>
+        <dt>要確認</dt><dd class="flagged">気象データのAPI利用条件と、初雪の公式定義（気象台発表を基準にする）。NANAは原作・映画の権利元が異なるため、コスプレ企画の呼びかけ方は要確認。</dd>
+      </dl>
+    </article>
+  </div>
+
+  <h3>PIECES OF A DREAM ／ CHEMISTRY<span class="tier c">C</span></h3>
+  <div class="ideas">
+    <article class="idea">
+      <div class="idea-top"><span class="chip song">PIECES OF A DREAM</span><span class="chip kind">逆・認知ギャップ</span><span class="chip diff">実行難度 低</span></div>
+      <h4>25年前の新曲です。誰の曲か、当ててください。</h4>
+      <dl class="spec">
+        <dt>戦略</dt><dd>未聴率64.9%で認知最下位。ただし<b>初聴でも「おしゃれ」「ジャズっぽい」と好意的</b>。知られていないことを弱点ではなく<b>新曲性</b>として使う。1番サビ得票81%は10曲中最高で、聴けば刺さるという構造は確認済み。</dd>
+        <dt>つくるもの</dt><dd>曲名とアーティストを伏せて音源を先に置き、「25年前の曲です。誰の曲か当ててください」と<b>伏せていること自体を開示する</b>形で出題。※新人を偽装する形は取らない——バレた時に失うものが大きく、誠実さのコストに見合わない。</dd>
+        <dt>状況</dt><dd>CHEMISTRYは<b>2026年がデビュー25周年イヤー</b>（2001年3月7日「PIECES OF A DREAM」）。25周年ツアー「The 2 Pulse」とカバーベストが動いており、公式側の受け皿がある。</dd>
+        <dt>施策</dt><dd>「回転界隈」への音源提供（回答者が界隈名まで指名）／A/Bメロ1.25倍速＋サビ等速の2バージョン配布（箇所別テンポ設計の明示提案）／平成レトロのおしゃれ文脈（古着屋・平成プリ・レコードカフェ）に置いて「知る曲」から<b>「雰囲気で使う曲」</b>へ移す。</dd>
+        <dt>要確認</dt><dd class="flagged">正式表記は<b>「PIECES OF A DREAM」</b>（調査レポートは「PIECE OF A DREAM」表記）。以降の資料で統一を。</dd>
+      </dl>
+    </article>
+  </div>
+
+  <h3>ラブストーリーは突然に ／ 小田和正<span class="tier c">C</span></h3>
+  <div class="ideas">
+    <article class="idea">
+      <div class="idea-top"><span class="chip song">ラブストーリー</span><span class="chip kind">イントロ特化アカウント</span><span class="chip diff">実行難度 低</span></div>
+      <h4>イントロ2秒だけで、100日ぶん。</h4>
+      <dl class="spec">
+        <dt>戦略</dt><dd>楽曲全体のバズ期待は30.7%と低いが、<b>イントロ得票37%は10曲中最高</b>で、しかもイントロは既に独立したミーム素材として認知されている。曲を売るのではなく<b>イントロを素材として流通させる</b>。</dd>
+        <dt>つくるもの</dt><dd>①「突然○○な瞬間」5選フォーマット用の<b>公式イントロ音源</b>（数秒）。②<b>5秒のショートドラマを100日連続投稿するアカウント</b>——全話がこのイントロで始まる（回答者の明示提案「イントロ数秒でみんなに想像してもらうショートドラマ」）。毎日同じ音で始まることで、音そのものがチャンネルのロゴになる。</dd>
+        <dt>そのほか</dt><dd>「おじさんがダンディーに踊る→若い子が面白がって真似する」という<b>世代ギャップ自体のコンテンツ化</b>／フィルムカメラ・古着のレトロ映えBGM。</dd>
+        <dt>タイミング</dt><dd>『東京ラブストーリー』は1991年1月期＝2026年で35年。再放送・配信のタイミングに合わせる。</dd>
+        <dt>要確認</dt><dd class="flagged">イントロ切り出し音源の権利処理（原盤・出版）。ドラマ側の素材使用は別途。</dd>
+      </dl>
+    </article>
+  </div>
+</section>
+
+<!-- ══════════════ 7 ══════════════ -->
+<section data-song="survey">
+  <div class="sec-head"><span class="sec-no mono">07</span><h2>12か月の並べ方</h2></div>
+  <p class="sec-sub">今日（2026年7月30日）を起点に、仕込み→回収で組んだ順序。太字が各月の主役です。</p>
+
+  <div class="tw"><table>
+    <thead><tr><th>時期</th><th>主役</th><th>やること</th><th>回収</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">8月</td><td><b>HOT LIMIT</b>／笑顔（撮影）</td><td>#妖精チャレンジを即開始（THE FIRST TAKEの追い風が残っている今月中）。笑顔は学校夏休み中に撮影、ツアー同行で47本を開始。</td><td>夏のうちに</td></tr>
+      <tr><td class="mono">9月</td><td><b>じょいふる</b>／ブルーバード</td><td>9/23記念日に「2009年の高校」告知＋学籍番号ジェネレーター公開。ブルーバードは体育祭の「羽ばたく」振り配布。</td><td>10月</td></tr>
+      <tr><td class="mono">10月</td><td><b>じょいふる</b>／GLAMOROUS SKY</td><td>文化祭シーズンにイベント開催。ハロウィンで#NANAメイクチャレンジ。<b>笑顔の合唱パッケージは11月までに配布完了</b>（学校の選曲が年末に固まるため）。</td><td>11月</td></tr>
+      <tr><td class="mono">11月</td><td><b>じょいふる</b>（11/11）／<b>中島美嘉3曲</b>（11/7）</td><td>ポッキーの日にカバーMV全色集合ver.。25周年で3曲同時＋初雪トリガー始動。</td><td>年末</td></tr>
+      <tr><td class="mono">12月</td><td><b>気まぐれロマンティック</b>（12/3）／雪の華</td><td>「アイドルが真似できない」シリーズ第1弾、ピコピコ2秒音源、MVリマスター＋似てる人選手権。</td><td>2月</td></tr>
+      <tr><td class="mono">1〜2月</td><td><b>笑顔</b>／気まロマ（2/14）／100万回</td><td>笑顔の認知ギャップMV公開。バレンタインでカバー対決編と100万回カウンター。</td><td>3月</td></tr>
+      <tr><td class="mono">2月</td><td><b>ブルーバード</b>（2/15）／笑顔（2/27）</td><td>疾風伝20周年で海外同時。Pokémon Dayから卒業へ連結。</td><td>3月</td></tr>
+      <tr><td class="mono">3月</td><td><b>笑顔</b></td><td>卒業シーズンに全投下。「笑顔／47」公開。20周年イヤーの締め。</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ══════════════ 8 ══════════════ -->
+<section data-song="survey">
+  <div class="sec-head"><span class="sec-no mono">08</span><h2>全曲共通の下地</h2></div>
+  <p class="sec-sub">個別企画の前に済ませておくと、どの企画も立ち上がりが速くなるもの。調査が「全曲共通の最低条件」と書いている項目を含みます。</p>
+
+  <div class="pr">
+    <div><b>倍速×箇所別の音源棚</b>調査の最低条件。等速／1.25倍／1.5倍 × イントロ／1番サビ／大サビの組み合わせで用意する。逆張り（ブルーバードのイントロを遅く、PIECES OF A DREAMのサビ等速）も棚に入れる。<b>これが無いと他の全施策の効率が落ちる。</b></div>
+    <div><b>イントロ単体音源</b>気まロマの2秒、ラブストーリーの数秒、ブルーバードのアウトロのハーモニカ。「踊らない層」が最も使うのがここ。参加母数を増やしたいならダンス施策より先に手を付ける。</div>
+    <div><b>CapCutテンプレの公式配布</b>「テンプレートがあればめちゃくちゃ使用されそう」は回答者の明示要望。卒業／カップル／大切な人に贈る／思い出振り返りの4型を先に作る。</div>
+    <div><b>親子で歌ってみた</b>認知経路1位が親・家族という調査結果を、そのまま企画にする。親の思い出語り×子のリアクションはエモ文脈と相性が良く、10曲すべてに適用できる唯一の横断型。</div>
+    <div><b>古参クリエイターの「懐かしい」起爆</b>ミクチャ／初期TikTok世代のクリエイターに当時の文脈で再投稿してもらう。100万回で特に効く。新規クリエイターより単価が読みやすい枠でもある。</div>
+    <div><b>「バズ可能性」は予想である</b>調査の数値は実績ではなく、感度の高い層（女性90.4%・19歳以下77.2%）の予想。男性とライト層の感覚は反映されていない。<b>カップル・メイク系に偏った案は、この偏りの産物である可能性を織り込んで読む。</b></div>
+  </div>
+</section>
+
+<footer>
+  <h5>この資料の作り方</h5>
+  <ul>
+    <li><b>調査データ</b>：共有いただいた「旧譜10曲 リバイバルヒット可能性調査 結果レポート」および「曲別×箇所別アプローチプラン」（n=114／2026年7月実施／自由記述約1,500件、うちバズイメージ有効605件）から引用。数値・Tier・回答件数はすべて同レポートに準拠。</li>
+    <li><b>コメント採取</b>：2026年7月30日に各楽曲の公式MV等のコメントを取得（関連度順の上位）。いいね数は取得時点の表示値で、丸め表記（2万・1.2万等）は表示のまま扱っています。<b>「笑顔」の公式MVはコメントが取得できなかったため、劇場版エンディング版の動画のコメントを使用</b>しました。ミームの母集団としてはむしろこちらが本体です。</li>
+    <li><b>周年・タイアップ</b>：リリース日、タイアップ、周年、進行中の企画は公開情報で照合しています。ツアー日程は発表済みぶん（2026年11月北海道公演まで）に基づくため、以降は確定情報での再確認が必要です。</li>
+  </ul>
+
+  <h5>先に潰しておくべき論点</h5>
+  <ul>
+    <li><b>ポケモン関連は許諾が前提。</b>笑顔の本命企画は株式会社ポケモン／製作委員会の意向次第です。ゲノセクトに触れない代替版（「2013年の夏、映画館にいた人へ」）を同時に設計しておけば、許諾が下りなくても企画は死にません。</li>
+    <li><b>企業コラボ（ジョイフル・ポッキー）は打診前に発表しない。</b>アイデア段階での外部発信は交渉を壊します。</li>
+    <li><b>学校施策は肖像と方針が壁。</b>顔を出さずに成立する型（手だけの振り、後ろ姿、板書、上履き）を主軸に設計しておくこと。</li>
+    <li><b>10曲横断のクイズ企画は他社原盤10件の許諾が必要。</b>自社カタログ内で成立する最小版から始めるのが現実的です。</li>
+    <li><b>100万回の「I love you」の3月。</b>リリース日は2011年3月9日で、震災の2日前。3月の記念日文脈での建て方は避け、記念日・冬の恋愛軸で組んでいます。</li>
+  </ul>
+</footer>
+
+</div>
