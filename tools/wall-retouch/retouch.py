@@ -1,20 +1,28 @@
 """Background wall clean-up for the TFT SNS clip / stills.
 
-Two stages, both driven by a soft "this pixel is wall" mask:
+The wall keeps its own colour — the point is to even it out, not to blow it to
+white, which reads as a cut-out.  Three stages, all driven by a soft "this
+pixel is wall" mask:
 
   1. flat-field  : estimate the smooth wall colour field (illumination + colour
-                   cast, including the diagonal light streaks and the yellow
-                   patches) and divide it out so the wall becomes an even,
-                   neutral white.  The gain tapers to 1.0 over the subjects so
-                   skin / costume colours are untouched.
-  2. whiten      : deep-background pixels (well away from the silhouette and
-                   already close to white after stage 1) are blended to a flat
-                   target white, which kills residual grain and stains.
+                   cast, including the diagonal light streaks) and divide it
+                   out, so the wall settles on one even tone.  The target tone
+                   is the wall's *own* median colour, optionally lifted a few
+                   percent.  Division keeps the film grain, so the background
+                   still matches the subject's texture.
+  2. stain       : whatever deviation survives at blob scale (marks, patches,
+                   blotches) is low-passed over the wall only and subtracted.
+                   Fine grain is below that scale and is left alone.
+  3. edge guard  : both corrections fade out towards the silhouette, so the
+                   talent's natural contact shadow on the wall stays put.
+
+Skin, costume and stray hair are never touched: the gain tapers to 1.0 across
+the subjects.
 """
 import cv2
 import numpy as np
 
-TARGET = np.float32([250.0, 250.0, 250.0]) / 255.0   # BGR flat white
+LIFT = 1.06          # how much brighter than the wall's own tone to aim for
 
 
 # ---------------------------------------------------------------- mask -----
@@ -91,19 +99,34 @@ def wall_field(bgr, bg, small_w=160, blur=9):
     return f                                          # small; upscaled later
 
 
-# ------------------------------------------------------------- retouch -----
-def retouch(bgr, prev_field=None, ema=0.35,
-            gain_lo=0.80, gain_hi=1.75, whiten=1.0,
-            feather=9, d0=3.0, d1=14.0, tol=0.10, tol_flat=0.025, s=None):
-    """bgr float32 0..1 -> (result, field) .
+def wall_tone(bgr, s=None):
+    """The wall's own median colour (BGR float) — the tone to even out to."""
+    h, w = bgr.shape[:2]
+    if s is None:
+        s = w / 946.0
+    rough = cv2.resize(wall_field(bgr, wall_mask(bgr, s)), (w, h),
+                       interpolation=cv2.INTER_CUBIC)
+    bg = wall_mask(bgr, s, field=rough).astype(bool)
+    if bg.sum() < 100:
+        return None
+    return np.median(bgr[bg], axis=0)
 
-    ``s`` scales every pixel-sized parameter; it defaults to the image width
-    relative to the 946 px clip the settings were tuned on.
+
+# ------------------------------------------------------------- retouch -----
+def retouch(bgr, prev_field=None, ema=0.35, target=None, lift=LIFT,
+            gain_lo=0.80, gain_hi=1.80, feather=9,
+            stain=1.0, stain_sigma=9.0, s0=10.0, s1=34.0, s=None):
+    """bgr float32 0..1 -> (result, field).
+
+    ``target`` is the BGR tone the wall should settle on.  Pass the value
+    measured once over a whole clip so the background cannot drift; leave it
+    None to derive it per image.  ``s`` scales every pixel-sized parameter and
+    defaults to the image width relative to the 946 px clip it was tuned on.
     """
     h, w = bgr.shape[:2]
     if s is None:
         s = w / 946.0
-    feather, d0, d1 = feather * s, d0 * s, d1 * s
+    feather, stain_sigma, s0, s1 = feather * s, stain_sigma * s, s0 * s, s1 * s
 
     # pass 1: conservative mask -> rough wall colour; pass 2: relative mask
     rough = cv2.resize(wall_field(bgr, wall_mask(bgr, s)), (w, h),
@@ -116,20 +139,27 @@ def retouch(bgr, prev_field=None, ema=0.35,
     new_field = field
 
     big = cv2.resize(field, (w, h), interpolation=cv2.INTER_CUBIC)
-    gain = np.clip(TARGET / np.maximum(big, 1e-3), gain_lo, gain_hi)
+    if target is None:
+        m = bg.astype(bool)
+        target = np.median(bgr[m], axis=0) if m.sum() > 100 else big.mean((0, 1))
+    target = np.clip(np.float32(target) * lift, 0.0, 1.0)
+
+    gain = np.clip(target / np.maximum(big, 1e-3), gain_lo, gain_hi)
 
     # taper the gain to 1.0 across the subjects
     soft = cv2.GaussianBlur(bg.astype(np.float32), (0, 0), feather)
     soft = np.clip(soft * 1.15, 0.0, 1.0)[..., None]
     out = bgr * (1.0 + (gain - 1.0) * soft)
 
-    # flat white in the deep background
-    if whiten > 0:
+    # blob-scale stains: low-pass the residual over the wall only, subtract it
+    if stain > 0:
+        m = bg.astype(np.float32)
+        res = (out - target) * m[..., None]
+        num = cv2.GaussianBlur(res, (0, 0), stain_sigma)
+        den = cv2.GaussianBlur(m, (0, 0), stain_sigma)[..., None]
+        blob = num / np.maximum(den, 1e-3)
         dist = cv2.distanceTransform(bg, cv2.DIST_L2, 3)
-        a_geom = np.clip((dist - d0) / (d1 - d0), 0.0, 1.0)
-        dev = np.abs(out - TARGET).max(2)
-        a_col = np.clip((tol - dev) / (tol - tol_flat), 0.0, 1.0)
-        a = cv2.GaussianBlur(a_geom * a_col, (0, 0), 3.0 * s)[..., None] * whiten
-        out = out * (1.0 - a) + TARGET * a
+        wgt = np.clip((dist - s0) / (s1 - s0), 0.0, 1.0)[..., None] * stain
+        out = out - blob * wgt
 
     return np.clip(out, 0.0, 1.0), new_field
