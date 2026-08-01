@@ -1,0 +1,31 @@
+{
+  "$comment": [
+    "担当アーティストをここに登録します。1組につき1エントリ。",
+    "spotifyId / youtubeChannelId は `npm run find-artist -- \"アーティスト名\"` で調べられます。",
+    "使わない項目は null のままにしてください（その指標だけスキップされます）。",
+    "",
+    "各フィールド:",
+    "  name              メールに表示される名前",
+    "  slug              履歴の保存先 data/artists/<slug>/history.jsonl",
+    "  enabled           false にすると監視対象から外れます",
+    "  spotifyId         Spotify のアーティストID（フォロワー数・人気度・トップ曲の人気度を追跡）",
+    "  youtubeChannelId  公式チャンネルID（登録者数・総再生数を追跡）",
+    "  ugc               true なら直近24hにその名前でアップされたYouTube動画の本数と再生数を計測",
+    "  ugcQuery          UGC検索に使う語（省略時は name）",
+    "  news              false にするとニュース言及数の計測を止めます（APIキー不要なので既定は有効）",
+    "  newsQuery         ニュース検索に使う語（省略時は name の完全一致）"
+  ],
+  "artists": [
+    {
+      "name": "サンプルアーティスト",
+      "slug": "sample-artist",
+      "enabled": false,
+      "spotifyId": null,
+      "youtubeChannelId": null,
+      "ugc": true,
+      "ugcQuery": null,
+      "news": true,
+      "newsQuery": null
+    }
+  ]
+}

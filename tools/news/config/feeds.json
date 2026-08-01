@@ -1,0 +1,49 @@
+{
+  "$comment": [
+    "カテゴリごとのニュースソース。enabled: false にすると取得しません。",
+    "url を書けば通常の RSS/Atom、google を書けば Google ニュース検索の結果を取り込みます",
+    "（google 版は API キー不要で、日本語media の取りこぼしを補います）。",
+    "取得に失敗したソースはスキップされ、メール末尾に理由が記載されます。",
+    "maxPerFeed: 1ソースあたりの取り込み上限（新しい順）。"
+  ],
+  "maxPerFeed": 12,
+  "lookbackHours": 24,
+  "mondayLookbackHours": 72,
+  "categories": [
+    {
+      "key": "music",
+      "label": "音楽業界・エンタメ",
+      "feeds": [
+        { "name": "Music Business Worldwide", "url": "https://www.musicbusinessworldwide.com/feed/", "enabled": true },
+        { "name": "Music Ally", "url": "https://musically.com/feed/", "enabled": true },
+        { "name": "Billboard", "url": "https://www.billboard.com/feed/", "enabled": true },
+        { "name": "Variety Music", "url": "https://variety.com/v/music/feed/", "enabled": true },
+        { "name": "CINRA", "url": "https://www.cinra.net/feed", "enabled": true },
+        { "name": "国内音楽ビジネス（Googleニュース）", "google": "音楽業界 OR レコード会社 OR 音楽配信 OR 著作権 音楽", "enabled": true },
+        { "name": "アーティスト動向（Googleニュース）", "google": "アーティスト 新曲 OR ツアー OR ライブ 発表", "enabled": true }
+      ]
+    },
+    {
+      "key": "social",
+      "label": "SNS・動画トレンド",
+      "feeds": [
+        { "name": "Social Media Today", "url": "https://www.socialmediatoday.com/feeds/news/", "enabled": true },
+        { "name": "Tubefilter", "url": "https://www.tubefilter.com/feed/", "enabled": true },
+        { "name": "Digiday", "url": "https://digiday.com/feed/", "enabled": true },
+        { "name": "The Verge", "url": "https://www.theverge.com/rss/index.xml", "enabled": true },
+        { "name": "SNSトレンド（Googleニュース）", "google": "TikTok OR YouTube Shorts OR Instagram リール トレンド", "enabled": true }
+      ]
+    },
+    {
+      "key": "ai",
+      "label": "AI・テクノロジー",
+      "feeds": [
+        { "name": "TechCrunch AI", "url": "https://techcrunch.com/category/artificial-intelligence/feed/", "enabled": true },
+        { "name": "Ars Technica AI", "url": "https://arstechnica.com/ai/feed/", "enabled": true },
+        { "name": "VentureBeat AI", "url": "https://venturebeat.com/category/ai/feed/", "enabled": true },
+        { "name": "ITmedia AI+", "url": "https://rss.itmedia.co.jp/rss/2.0/aiplus.xml", "enabled": true },
+        { "name": "生成AIと音楽（Googleニュース）", "google": "生成AI 音楽 OR エンタメ", "enabled": true }
+      ]
+    }
+  ]
+}

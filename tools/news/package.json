@@ -1,0 +1,18 @@
+{
+  "name": "daily-news",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "平日朝に担当アーティストの異常値と業界ニュースをメール配信する",
+  "scripts": {
+    "send": "node src/index.mjs",
+    "dry-run": "node src/index.mjs --dry-run",
+    "find-artist": "node scripts/find-artist.mjs",
+    "test": "node --test src/*.test.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "fast-xml-parser": "^4.5.1",
+    "nodemailer": "^6.9.16"
+  }
+}

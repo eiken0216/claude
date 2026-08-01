@@ -1,0 +1,69 @@
+name: Daily News Brief
+
+on:
+  schedule:
+    # 平日 08:00 JST = 前日 23:00 UTC（月〜金 JST = 日〜木 UTC）
+    - cron: '0 23 * * 0-4'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'メールを送らずに本文だけ確認する'
+        type: boolean
+        default: false
+
+# 指標の履歴と配信レポートをリポジトリに書き戻すため
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-news
+  cancel-in-progress: false
+
+jobs:
+  brief:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: 依存関係をインストール
+        working-directory: tools/news
+        run: npm install --no-audit --no-fund
+
+      - name: ブリーフを作成して送信
+        working-directory: tools/news
+        env:
+          # メール送信（Gmail の場合はアプリパスワード）
+          SMTP_HOST: ${{ vars.SMTP_HOST }}
+          SMTP_PORT: ${{ vars.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_TO: ${{ vars.MAIL_TO }}
+          MAIL_FROM: ${{ vars.MAIL_FROM }}
+          # アーティスト指標
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          # 日本語キュレーション（任意）
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
+          ANTHROPIC_EFFORT: ${{ vars.ANTHROPIC_EFFORT }}
+        run: node src/index.mjs ${{ inputs.dry_run && '--dry-run' || '' }}
+
+      - name: 履歴とレポートをコミット
+        if: ${{ !inputs.dry_run }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if git diff --staged --quiet; then
+            echo "更新なし"
+          else
+            git commit -m "chore(news): $(TZ=Asia/Tokyo date +%Y-%m-%d) のブリーフと指標を記録"
+            git push origin HEAD:${GITHUB_REF_NAME}
+          fi
