@@ -1,0 +1,27 @@
+{
+  "_comment": "このファイルを dakoku.config.json にコピーして自分の値に書き換えてください。認証情報は一切書きません（SSO セッションはブラウザプロファイルに保持されます）。",
+
+  "apiBase": "https://dakoku.sonymusic.co.jp/api",
+  "siteUrl": "https://dakoku.sonymusic.co.jp/site/index.html",
+
+  "_comment_apikey": "API キーは打刻サイトのフロントエンドから実行時に自動取得するため、ここには書きません。取得に失敗する場合のみ apiKey に手動で設定してください。",
+
+  "_comment_location": "実際に勤務している場所の緯度・経度を入れてください。打刻リクエストに位置情報として送られます。適当な値や偽の値を入れないでください。Google マップで勤務先を右クリックすると座標が出ます。",
+  "latitude": null,
+  "longitude": null,
+
+  "_comment_mail": "リマインド・障害通知の送信先。業務PC の Outlook 経由で送るため、パスワードは不要です。",
+  "mailTo": "eiken.tezuka@sonymusic.co.jp",
+
+  "_comment_schedule": "リマインド時刻。Install-DakokuTasks.ps1 がこの値でタスクを登録します。",
+  "eveningReminderTime": "20:00",
+  "missingPunchCheckTime": "22:00",
+
+  "_comment_browser": "SSO セッションを保持する専用ブラウザプロファイルの場所。初回のみ -Interactive でログインが必要です。",
+  "browserProfileDir": "%LOCALAPPDATA%\\DakokuAuto\\edge-profile",
+  "debugPort": 9222,
+
+  "_comment_punchIn": "ログオン検知で出勤打刻する時間帯の下限・上限（この範囲外のログオンでは打刻しません）。深夜の再起動などで誤打刻しないためのガードです。",
+  "punchInEarliest": "06:00",
+  "punchInLatest": "12:00"
+}

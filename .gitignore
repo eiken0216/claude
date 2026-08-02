@@ -8,3 +8,6 @@ test-results/
 
 # OS
 .DS_Store
+
+# 打刻: ローカル設定（勤務地の座標を含むためコミットしない）
+scripts/windows/dakoku.config.json
