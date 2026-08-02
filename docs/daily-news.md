@@ -43,6 +43,23 @@
 
 ## セットアップ（初回のみ）
 
+> ### ⚠️ APIキーの取り扱い
+>
+> APIキーやアプリパスワードは、**GitHub の設定画面にご自身で直接入力してください。**
+>
+> - **チャット（Claude との会話）に貼らないでください。** 会話は記録として残るため、
+>   キーがログに含まれてしまいます。
+> - **リポジトリのファイルに書かないでください。** コミットすると履歴に永久に残り、
+>   あとから消しても復元できてしまいます。設定ファイルにキーを書く場所はありません。
+> - 誰かに渡す必要は一切ありません。登録画面はあなたしか触りません。
+>
+> 登録後は GitHub の画面上でも二度と表示されず（差し替えのみ可能）、
+> Actions のログに出力されても自動でマスクされます。
+>
+> 万一どこかに貼ってしまった場合は、**そのキーを発行元で失効させて作り直してください。**
+> Gmail アプリパスワードは <https://myaccount.google.com/apppasswords> から削除、
+> Spotify / Google Cloud / Anthropic も各コンソールから失効できます。
+
 ### 1. Gmail のアプリパスワードを作る（必須・5分）
 
 送信元として Gmail を使います。通常のパスワードではなく **アプリパスワード** が必要です。
@@ -83,9 +100,12 @@
 
 ### 5. GitHub にシークレットを登録する
 
-リポジトリの **Settings → Secrets and variables → Actions** を開きます。
+<https://github.com/eiken0216/claude/settings/secrets/actions> を開きます
+（リポジトリの **Settings → Secrets and variables → Actions**）。
 
-**Secrets タブ**（`New repository secret` から1つずつ）:
+**Secrets タブ** で `New repository secret` を押し、Name と Secret を入力して
+`Add secret`。これを1つずつ、6回繰り返します。**Name は下表のとおり正確に**入れてください
+（大文字・アンダースコアまで一致している必要があります）:
 
 | Name | Value |
 | --- | --- |

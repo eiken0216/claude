@@ -1,31 +1,67 @@
 {
   "$comment": [
-    "担当アーティストをここに登録します。1組につき1エントリ。",
-    "spotifyId / youtubeChannelId は `npm run find-artist -- \"アーティスト名\"` で調べられます。",
-    "使わない項目は null のままにしてください（その指標だけスキップされます）。",
+    "担当アーティストの定義。1組につき1エントリ。",
+    "ID を調べ直すときは `npm run find-artist -- \"アーティスト名\"`（要 Spotify/YouTube のキー）。",
     "",
     "各フィールド:",
     "  name              メールに表示される名前",
     "  slug              履歴の保存先 data/artists/<slug>/history.jsonl",
     "  enabled           false にすると監視対象から外れます",
     "  spotifyId         Spotify のアーティストID（フォロワー数・人気度・トップ曲の人気度を追跡）",
-    "  youtubeChannelId  公式チャンネルID（登録者数・総再生数を追跡）",
-    "  ugc               true なら直近24hにその名前でアップされたYouTube動画の本数と再生数を計測",
+    "  youtubeChannelId  公式チャンネルID（登録者数・総再生数を追跡）。null ならスキップ",
+    "  ugc               true なら直近24hにその語でアップされたYouTube動画の本数と再生数を計測",
     "  ugcQuery          UGC検索に使う語（省略時は name）",
-    "  news              false にするとニュース言及数の計測を止めます（APIキー不要なので既定は有効）",
+    "  news              ニュース言及数の計測（APIキー不要）",
     "  newsQuery         ニュース検索に使う語（省略時は name の完全一致）"
   ],
   "artists": [
     {
-      "name": "サンプルアーティスト",
-      "slug": "sample-artist",
-      "enabled": false,
-      "spotifyId": null,
+      "name": "龍宮城",
+      "slug": "ryugujo",
+      "enabled": true,
+      "spotifyId": "0xOawbTJb7VLKsaJGjpeCK",
+      "youtubeChannelId": "UC05ZCNpj9QEPHPBKvC50ohQ",
+      "ugc": true,
+      "ugcQuery": null,
+      "news": true,
+      "newsQuery": null,
+      "note": "YouTube は「龍宮城 OFFICIAL / 0年0組」。ニュースは素の「龍宮城」で検証済み（浦島太郎系の誤検出なし）"
+    },
+    {
+      "name": "凛として時雨",
+      "slug": "ling-tosite-sigure",
+      "enabled": true,
+      "spotifyId": "00DuPiLri3mNomvvM3nZvU",
+      "youtubeChannelId": "UCWxFYv7xfPQVx5yzjpJX33w",
+      "ugc": true,
+      "ugcQuery": null,
+      "news": true,
+      "newsQuery": null,
+      "note": "YouTube は「凛として時雨 Official Channel」"
+    },
+    {
+      "name": "TK from 凛として時雨",
+      "slug": "tk-from-ling-tosite-sigure",
+      "enabled": true,
+      "spotifyId": "3B9O5mYYw89fFXkwKh7jCS",
       "youtubeChannelId": null,
       "ugc": true,
       "ugcQuery": null,
       "news": true,
-      "newsQuery": null
+      "newsQuery": "\"TK from 凛として時雨\" OR \"凛として時雨 TK\"",
+      "note": "YouTube は凛として時雨と同じ公式チャンネルを共用しているため、二重計上を避けて null にしている。TKソロのチャンネルが分かれたら設定する"
+    },
+    {
+      "name": "楽音",
+      "slug": "sasane",
+      "enabled": true,
+      "spotifyId": "4W11pDowC8EO7a6cR5WO9L",
+      "youtubeChannelId": null,
+      "ugc": true,
+      "ugcQuery": "楽音 mosi mosi",
+      "news": true,
+      "newsQuery": "\"mosi mosi?\" OR (楽音 ささね) OR (楽音 sasane)",
+      "note": "読みは「ささね」。「楽音」は一般名詞と衝突するため UGC/ニュースとも曲名で絞っている。新曲が出たら ugcQuery / newsQuery を更新すること。公式YouTubeチャンネルIDは未特定"
     }
   ]
 }
